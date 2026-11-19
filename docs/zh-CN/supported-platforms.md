@@ -40,6 +40,7 @@
 - 通过 `linco` 通道接入官方 Linco 产品链路；
 - 通过 `linco-demo` 体验本地或在线 H5 参考流程；
 - 由参考 Web 工程构建出的微信小程序产物；
+- 安卓设备可通过官方 APK 或 H5 使用；仓库内没有 Android App 工程与 APK 构建脚本，详见[安卓端构建与运行指南](android.md)；
 - 基于新 channel adapter 扩展出的自定义 H5、小程序、App、Web 或 IM 入口。
 
 但仓库 **不包含** 覆盖所有前端形态的完整生产控制台。

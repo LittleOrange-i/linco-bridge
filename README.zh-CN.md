@@ -75,7 +75,7 @@ Linco App、Reference Web 或自定义客户端
 下载 Linco App：
 
 - [iOS TestFlight](https://testflight.apple.com/join/Ahm1encB)
-- [Android APK](https://www.lincotalk.com/download/apk/linco.apk)
+- [Android APK](https://www.lincotalk.com/download/apk/linco.apk)（安卓端使用与运行说明见[安卓端构建与运行指南](docs/zh-CN/android.md)）
 
 在 App 中打开 **桥接**，选择 Agent 导入方式，然后在已安装 Agent CLI 的电脑上执行页面生成的命令。命令形态通常如下：
 
@@ -174,7 +174,7 @@ linco-connect start --daemon
 
 | 目标 | 文档 |
 | --- | --- |
-| 快速上手 | [快速开始](docs/zh-CN/quick-start.md)、[排障](docs/zh-CN/troubleshooting.md) |
+| 快速上手 | [快速开始](docs/zh-CN/quick-start.md)、[安卓端构建与运行](docs/zh-CN/android.md)、[排障](docs/zh-CN/troubleshooting.md) |
 | 理解系统 | [工作原理](docs/zh-CN/how-it-works.md)、[公开协议](docs/zh-CN/protocol.md)、[CLI 命令参考](docs/zh-CN/cli.md) |
 | 部署或扩展 | [在线 Demo 部署](docs/zh-CN/deploy-demo.md)、[Reference Web](docs/zh-CN/reference-web.md)、[二次开发](docs/zh-CN/secondary-development.md) |
 | 查看边界与政策 | [支持平台](docs/zh-CN/supported-platforms.md)、[安全与隐私](docs/zh-CN/security-and-privacy.md)、[支持边界](SUPPORT.md) |

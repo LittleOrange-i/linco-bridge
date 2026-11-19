@@ -61,6 +61,7 @@ linco-connect start --daemon
 - [连接器安装、初始化和命令说明](../../linco-bridge-connect/README.zh-CN.md)
 - [参考平台启动和连接流程](../../linco-bridge-platform/README.zh-CN.md)
 - [在线 Demo 部署](deploy-demo.md)
+- [安卓端构建与运行](android.md)
 - [CLI 入口](cli.md)
 - [排障](troubleshooting.md)
 
