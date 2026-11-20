@@ -20,9 +20,7 @@ const blocks = computed(() => parseMarkdownBlocks(props.content))
 const useMarkdown = computed(() => hasMarkdownStructure(props.content))
 
 function inlineText(nodes: MarkdownInlineNode[]): string {
-  return nodes
-    .map((node) => (node.type === 'link' ? node.label : node.value))
-    .join('')
+  return nodes.map((node) => (node.type === 'link' ? node.label : node.value)).join('')
 }
 
 function handleLink(href: string) {
@@ -32,77 +30,82 @@ function handleLink(href: string) {
 </script>
 
 <template>
-  <view
+  <div
     v-if="!useMarkdown"
     class="message-markdown__plain-wrap"
     :class="`message-markdown__plain-wrap--${variant ?? 'assistant'}`"
   >
-    <text class="message-markdown__plain">{{ content }}</text>
-  </view>
-  <view v-else class="message-markdown" :class="`message-markdown--${variant ?? 'assistant'}`">
+    <span class="message-markdown__plain">{{ content }}</span>
+  </div>
+  <div v-else class="message-markdown" :class="`message-markdown--${variant ?? 'assistant'}`">
     <template v-for="(block, blockIndex) in blocks" :key="`block-${blockIndex}`">
-      <view
+      <div
         v-if="block.type === 'heading'"
         class="message-markdown__heading"
         :class="`message-markdown__heading--${block.level}`"
       >
-        <text>{{ inlineText(block.inlines) }}</text>
-      </view>
+        <span>{{ inlineText(block.inlines) }}</span>
+      </div>
 
-      <view v-else-if="block.type === 'blockquote'" class="message-markdown__quote">
-        <text>{{ inlineText(block.inlines) }}</text>
-      </view>
+      <div v-else-if="block.type === 'blockquote'" class="message-markdown__quote">
+        <span>{{ inlineText(block.inlines) }}</span>
+      </div>
 
-      <view v-else-if="block.type === 'hr'" class="message-markdown__hr" />
+      <div v-else-if="block.type === 'hr'" class="message-markdown__hr" />
 
-      <view
+      <div
         v-else-if="block.type === 'list'"
         class="message-markdown__list"
         :class="{ 'message-markdown__list--ordered': block.ordered }"
       >
-        <view
+        <div
           v-for="(item, itemIndex) in block.items"
           :key="`item-${blockIndex}-${itemIndex}`"
           class="message-markdown__list-item"
         >
-          <text class="message-markdown__bullet">{{ block.ordered ? `${itemIndex + 1}.` : '•' }}</text>
-          <view class="message-markdown__list-body">
-            <text class="message-markdown__text">
+          <span class="message-markdown__bullet">{{
+            block.ordered ? `${itemIndex + 1}.` : '•'
+          }}</span>
+          <div class="message-markdown__list-body">
+            <span class="message-markdown__text">
               <template v-for="(node, nodeIndex) in item" :key="`inline-${nodeIndex}`">
-                <text v-if="node.type === 'text'">{{ node.value }}</text>
-                <text v-else-if="node.type === 'bold'" class="message-markdown__bold">{{ node.value }}</text>
-                <text v-else-if="node.type === 'code'" class="message-markdown__inline-code">{{ node.value }}</text>
-                <text
-                  v-else
-                  class="message-markdown__link"
-                  @tap="handleLink(node.href)"
-                >
+                <span v-if="node.type === 'text'">{{ node.value }}</span>
+                <span v-else-if="node.type === 'bold'" class="message-markdown__bold">{{
+                  node.value
+                }}</span>
+                <span v-else-if="node.type === 'code'" class="message-markdown__inline-code">{{
+                  node.value
+                }}</span>
+                <span v-else class="message-markdown__link" @click="handleLink(node.href)">
                   {{ node.label }}
-                </text>
+                </span>
               </template>
-            </text>
-          </view>
-        </view>
-      </view>
+            </span>
+          </div>
+        </div>
+      </div>
 
-      <view v-else class="message-markdown__paragraph">
-        <text class="message-markdown__text">
-          <template v-for="(node, nodeIndex) in block.inlines" :key="`p-${blockIndex}-${nodeIndex}`">
-            <text v-if="node.type === 'text'">{{ node.value }}</text>
-            <text v-else-if="node.type === 'bold'" class="message-markdown__bold">{{ node.value }}</text>
-            <text v-else-if="node.type === 'code'" class="message-markdown__inline-code">{{ node.value }}</text>
-            <text
-              v-else
-              class="message-markdown__link"
-              @tap="handleLink(node.href)"
-            >
+      <div v-else class="message-markdown__paragraph">
+        <span class="message-markdown__text">
+          <template
+            v-for="(node, nodeIndex) in block.inlines"
+            :key="`p-${blockIndex}-${nodeIndex}`"
+          >
+            <span v-if="node.type === 'text'">{{ node.value }}</span>
+            <span v-else-if="node.type === 'bold'" class="message-markdown__bold">{{
+              node.value
+            }}</span>
+            <span v-else-if="node.type === 'code'" class="message-markdown__inline-code">{{
+              node.value
+            }}</span>
+            <span v-else class="message-markdown__link" @click="handleLink(node.href)">
               {{ node.label }}
-            </text>
+            </span>
           </template>
-        </text>
-      </view>
+        </span>
+      </div>
     </template>
-  </view>
+  </div>
 </template>
 
 <style scoped lang="scss">

@@ -45,11 +45,15 @@ export function useAgentLanding(sdk: AgentChatSdk = createAppAgentChatSdk()) {
     }
     try {
       unsubscribeHeader?.()
-      unsubscribeHeader = sdk.watchLandingHeader?.(agentType, (next) => {
-        const bridgeStatus = bridgeStore.statusByType[agentType]
-        header.value = mergeLandingHeader(next, bridgeStatus)
-        subtitle.value = buildLandingSubtitle(header.value)
-      }, connectionId)
+      unsubscribeHeader = sdk.watchLandingHeader?.(
+        agentType,
+        (next) => {
+          const bridgeStatus = bridgeStore.statusByType[agentType]
+          header.value = mergeLandingHeader(next, bridgeStatus)
+          subtitle.value = buildLandingSubtitle(header.value)
+        },
+        connectionId,
+      )
 
       const [nextHeader, items] = await Promise.all([
         sdk.getLandingHeader(agentType, connectionId),

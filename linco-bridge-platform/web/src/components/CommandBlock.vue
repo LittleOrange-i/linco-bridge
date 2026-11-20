@@ -21,15 +21,15 @@ async function handleCopy() {
 </script>
 
 <template>
-  <view class="command-block card">
-    <view class="command-block__header">
-      <text class="command-block__label">连接命令</text>
-      <view class="command-block__copy" @tap="handleCopy">
-        <text>复制</text>
-      </view>
-    </view>
-    <text class="command-block__content" selectable>{{ commands }}</text>
-  </view>
+  <div class="command-block card">
+    <div class="command-block__header">
+      <span class="command-block__label">连接命令</span>
+      <div class="command-block__copy" @click="handleCopy">
+        <span>复制</span>
+      </div>
+    </div>
+    <span class="command-block__content" selectable>{{ commands }}</span>
+  </div>
 </template>
 
 <style scoped lang="scss">

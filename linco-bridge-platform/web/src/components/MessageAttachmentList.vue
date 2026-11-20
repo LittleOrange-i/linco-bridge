@@ -54,27 +54,26 @@ async function handleAttachmentTap(item: ChatMessageAttachment, index: number) {
 </script>
 
 <template>
-  <view v-if="attachments.length > 0" class="attachment-list">
-    <view
+  <div v-if="attachments.length > 0" class="attachment-list">
+    <div
       v-for="(item, index) in attachments"
       :key="`${item.name}-${index}`"
       class="attachment-list__item"
       :class="`attachment-list__item--${variant ?? 'assistant'}`"
-      @tap="handleAttachmentTap(item, index)"
+      @click="handleAttachmentTap(item, index)"
     >
-      <image
+      <img
         v-if="isImageAttachment(item) && displaySrcByIndex[index]"
         class="attachment-list__image"
         :src="displaySrcByIndex[index]"
-        mode="aspectFill"
         @load="emit('previewLoad')"
       />
-      <view v-else class="attachment-list__file">
-        <text class="attachment-list__file-icon">📎</text>
-        <text class="attachment-list__file-name text-ellipsis">{{ item.name }}</text>
-      </view>
-    </view>
-  </view>
+      <div v-else class="attachment-list__file">
+        <span class="attachment-list__file-icon">📎</span>
+        <span class="attachment-list__file-name text-ellipsis">{{ item.name }}</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

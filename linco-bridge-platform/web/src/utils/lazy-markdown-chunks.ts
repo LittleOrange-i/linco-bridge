@@ -117,7 +117,10 @@ function splitLongProse(text: string, targetLineCount: number): string[] {
 
   const parts: string[] = []
   for (let index = 0; index < lines.length; index += targetLineCount) {
-    const slice = lines.slice(index, index + targetLineCount).join('\n').trim()
+    const slice = lines
+      .slice(index, index + targetLineCount)
+      .join('\n')
+      .trim()
     if (slice) parts.push(slice)
   }
   return parts.length > 0 ? parts : [text]

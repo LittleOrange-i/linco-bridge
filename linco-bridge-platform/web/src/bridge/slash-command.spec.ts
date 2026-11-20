@@ -6,7 +6,8 @@ import {
   slashCommandsFromHelpPayload,
 } from '@/bridge/slash-command'
 import {
-  clearSlashCommandCacheForTests,
+  clearSlashCommandsCacheForTests,
+  SLASH_COMMANDS_SHARED_SCOPE,
   readSlashCommandsFromCache,
   slashCommandsMemoryKey,
   writeSlashCommandsToCache,
@@ -70,7 +71,7 @@ describe('filterSlashCommands', () => {
 
 describe('slash command cache', () => {
   it('reads and writes scoped + shared cache', () => {
-    clearSlashCommandCacheForTests()
+    clearSlashCommandsCacheForTests()
     const items = slashCommandsFromHelpPayload({
       items: [{ command: '/help', description: '帮助' }],
     })
@@ -78,9 +79,7 @@ describe('slash command cache', () => {
     writeSlashCommandsToCache('codex', 'conn-1', 'session-1', items)
 
     expect(readSlashCommandsFromCache('codex', 'conn-1', 'session-1')).toEqual(items)
-    expect(readSlashCommandsFromCache('codex', 'conn-1')).toEqual(items)
-    expect(slashCommandsMemoryKey('codex', 'conn-1', 'session-1')).toBe(
-      'codex|conn-1|session-1',
-    )
+    expect(readSlashCommandsFromCache('codex', 'conn-1', SLASH_COMMANDS_SHARED_SCOPE)).toEqual([])
+    expect(slashCommandsMemoryKey('codex', 'conn-1', 'session-1')).toBe('codex|conn-1|session-1')
   })
 })

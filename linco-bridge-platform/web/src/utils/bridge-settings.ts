@@ -1,7 +1,4 @@
-import type {
-  BridgeSessionSettings,
-  BridgeSettingsOptions,
-} from '@/bridge/types'
+import type { BridgeSessionSettings, BridgeSettingsOptions } from '@/bridge/types'
 
 export function bridgeSessionSettingsHasDisplayData(
   settings: BridgeSessionSettings | null | undefined,

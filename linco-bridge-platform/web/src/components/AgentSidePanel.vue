@@ -47,59 +47,55 @@ function handleOpenBotConfig() {
 </script>
 
 <template>
-  <view
-    v-if="visible && options && header"
-    class="agent-side-panel"
-    @touchmove.stop.prevent
-  >
-    <view class="agent-side-panel__mask" @tap="handleClose" />
+  <div v-if="visible && options && header" class="agent-side-panel" @touchmove.stop.prevent>
+    <div class="agent-side-panel__mask" @click="handleClose" />
 
-    <view class="agent-side-panel__sheet">
-      <scroll-view class="agent-side-panel__body" scroll-y :show-scrollbar="false">
-        <view class="agent-side-panel__hero">
-          <image class="agent-side-panel__avatar" :src="header.avatar" mode="aspectFill" />
-          <view class="agent-side-panel__title-entry" @tap="handleOpenBotConfig">
-            <text class="agent-side-panel__title">{{ header.title }}</text>
-            <text class="agent-side-panel__chevron">›</text>
-          </view>
-          <text v-if="subtitle" class="agent-side-panel__subtitle">{{ subtitle }}</text>
-        </view>
+    <div class="agent-side-panel__sheet">
+      <div class="uni-scroll-view agent-side-panel__body">
+        <div class="agent-side-panel__hero">
+          <img class="agent-side-panel__avatar" :src="header.avatar" />
+          <div class="agent-side-panel__title-entry" @click="handleOpenBotConfig">
+            <span class="agent-side-panel__title">{{ header.title }}</span>
+            <span class="agent-side-panel__chevron">›</span>
+          </div>
+          <span v-if="subtitle" class="agent-side-panel__subtitle">{{ subtitle }}</span>
+        </div>
 
-        <view class="agent-side-panel__new-chat" @tap="handleNewConversation">
-          <text class="agent-side-panel__new-chat-text">新建对话</text>
-        </view>
+        <div class="agent-side-panel__new-chat" @click="handleNewConversation">
+          <span class="agent-side-panel__new-chat-text">新建对话</span>
+        </div>
 
-        <view class="agent-side-panel__section-head">
-          <text class="agent-side-panel__section-title">历史会话</text>
-          <view class="agent-side-panel__search-btn" @tap="handleOpenHistorySearch">
-            <view class="agent-side-panel__search-icon" aria-label="搜索历史会话" />
-          </view>
-        </view>
+        <div class="agent-side-panel__section-head">
+          <span class="agent-side-panel__section-title">历史会话</span>
+          <div class="agent-side-panel__search-btn" @click="handleOpenHistorySearch">
+            <div class="agent-side-panel__search-icon" aria-label="搜索历史会话" />
+          </div>
+        </div>
 
-        <view v-if="visibleHistory.length === 0" class="agent-side-panel__empty">
-          <text class="agent-side-panel__empty-text">暂无历史会话</text>
-        </view>
+        <div v-if="visibleHistory.length === 0" class="agent-side-panel__empty">
+          <span class="agent-side-panel__empty-text">暂无历史会话</span>
+        </div>
 
-        <view v-else class="agent-side-panel__history">
-          <view
+        <div v-else class="agent-side-panel__history">
+          <div
             v-for="(item, index) in visibleHistory"
             :key="item.id"
             class="agent-side-panel__history-item"
             :class="{ 'agent-side-panel__history-item--gap': index < visibleHistory.length - 1 }"
           >
-            <AgentHistoryRow :item="item" @tap="handleOpenHistory(item)" />
-          </view>
-          <view
+            <AgentHistoryRow :item="item" @click="handleOpenHistory(item)" />
+          </div>
+          <div
             v-if="hasMoreHistory"
             class="agent-side-panel__view-all"
-            @tap="handleOpenHistorySearch"
+            @click="handleOpenHistorySearch"
           >
-            <text class="agent-side-panel__view-all-text">查看历史对话</text>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
-  </view>
+            <span class="agent-side-panel__view-all-text">查看历史对话</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

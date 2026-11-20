@@ -2,10 +2,7 @@
 import { computed } from 'vue'
 import MessageMarkdownBody from '@/components/MessageMarkdownBody.vue'
 import RichMessageChunk from '@/components/RichMessageChunk.vue'
-import {
-  shouldUseLazyMarkdown,
-  splitLazyMarkdownChunks,
-} from '@/utils/lazy-markdown-chunks'
+import { shouldUseLazyMarkdown, splitLazyMarkdownChunks } from '@/utils/lazy-markdown-chunks'
 
 const props = defineProps<{
   content: string
@@ -30,12 +27,12 @@ function handleLink(href: string) {
 </script>
 
 <template>
-  <view
+  <div
     v-if="lazyChunks"
     class="message-markdown message-markdown--lazy"
     :class="`message-markdown--${variant ?? 'assistant'}`"
   >
-    <view
+    <div
       v-for="(chunk, chunkIndex) in lazyChunks"
       :key="`chunk-${chunkIndex}-${chunk.source.length}`"
       class="message-markdown__chunk"
@@ -54,8 +51,8 @@ function handleLink(href: string) {
         :streaming="streaming"
         @link-tap="handleLink"
       />
-    </view>
-  </view>
+    </div>
+  </div>
   <MessageMarkdownBody
     v-else
     :content="content"

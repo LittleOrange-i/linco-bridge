@@ -2,7 +2,11 @@ import { appendAgentTypeQuery } from '@/bridge/sdk/agent-chat'
 import { BRIDGE_HISTORY_SYNC_LIMIT } from '@/bridge/constants'
 import { useSessionStore } from '@/stores'
 import { appendQueryToPath, createQueryParams, setQueryParam } from '@/utils/query-string'
-import { isBoundWorkspacePick, hasWorkspaceSessionPick, type PickWorkspaceResult } from '@/utils/pick-workspace'
+import {
+  isBoundWorkspacePick,
+  hasWorkspaceSessionPick,
+  type PickWorkspaceResult,
+} from '@/utils/pick-workspace'
 export { isBoundWorkspacePick as isBoundWorkspaceSession }
 
 export function shouldReloadHistoryOnOpen(picked: PickWorkspaceResult): boolean {

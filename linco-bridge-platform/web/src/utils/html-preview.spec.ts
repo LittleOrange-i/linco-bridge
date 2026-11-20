@@ -3,7 +3,9 @@ import { fixMalformedHtml, injectCspMeta, wrapHtmlPreviewDocument } from './html
 
 describe('html-preview', () => {
   it('fixes malformed doctype spacing', () => {
-    expect(fixMalformedHtml('<!DOCTYPEhtml><html><body></body></html>')).toContain('<!DOCTYPE html>')
+    expect(fixMalformedHtml('<!DOCTYPEhtml><html><body></body></html>')).toContain(
+      '<!DOCTYPE html>',
+    )
   })
 
   it('injects csp meta into head', () => {

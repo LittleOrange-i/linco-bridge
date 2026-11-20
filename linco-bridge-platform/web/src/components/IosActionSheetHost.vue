@@ -15,39 +15,31 @@ function handleBackdrop() {
 </script>
 
 <template>
-  <view
-    v-if="iosActionSheetState.visible"
-    class="ios-sheet-root"
-    @touchmove.stop.prevent
-  >
-    <view class="ios-sheet-backdrop" @tap="handleBackdrop" />
+  <div v-if="iosActionSheetState.visible" class="ios-sheet-root" @touchmove.stop.prevent>
+    <div class="ios-sheet-backdrop" @click="handleBackdrop" />
 
-    <view class="ios-sheet-panel">
-      <scroll-view
-        scroll-y
-        class="ios-sheet-group ios-sheet-group--actions"
-        :show-scrollbar="false"
-      >
-        <view
+    <div class="ios-sheet-panel">
+      <div class="uni-scroll-view ios-sheet-group ios-sheet-group--actions">
+        <div
           v-for="(label, index) in iosActionSheetState.items"
           :key="`${label}-${index}`"
           class="ios-sheet-item"
           :class="{ 'ios-sheet-item--last': index === iosActionSheetState.items.length - 1 }"
-          @tap="handleSelect(index)"
+          @click="handleSelect(index)"
         >
-          <text class="ios-sheet-item__text">{{ label }}</text>
-        </view>
-      </scroll-view>
+          <span class="ios-sheet-item__text">{{ label }}</span>
+        </div>
+      </div>
 
-      <view class="ios-sheet-group ios-sheet-group--cancel">
-        <view class="ios-sheet-item ios-sheet-item--last" @tap="handleCancel">
-          <text class="ios-sheet-item__text ios-sheet-item__text--cancel">
+      <div class="ios-sheet-group ios-sheet-group--cancel">
+        <div class="ios-sheet-item ios-sheet-item--last" @click="handleCancel">
+          <span class="ios-sheet-item__text ios-sheet-item__text--cancel">
             {{ iosActionSheetState.cancelText }}
-          </text>
-        </view>
-      </view>
-    </view>
-  </view>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

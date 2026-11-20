@@ -7,7 +7,10 @@ import {
 
 describe('lazy-markdown-chunks', () => {
   it('does not lazy-render short markdown', () => {
-    const content = Array.from({ length: LAZY_MARKDOWN_MIN_LINES - 1 }, (_, index) => `line ${index + 1}`).join('\n')
+    const content = Array.from(
+      { length: LAZY_MARKDOWN_MIN_LINES - 1 },
+      (_, index) => `line ${index + 1}`,
+    ).join('\n')
     expect(shouldUseLazyMarkdown(content)).toBe(false)
   })
 
@@ -27,6 +30,8 @@ describe('lazy-markdown-chunks', () => {
       ...Array.from({ length: 36 }, (_, index) => `line ${index + 1}`),
     ].join('\n')
     const chunks = splitLazyMarkdownChunks(content, 24)
-    expect(chunks.some((chunk) => chunk.hasHeavyContent && chunk.source.includes('```ts'))).toBe(true)
+    expect(chunks.some((chunk) => chunk.hasHeavyContent && chunk.source.includes('```ts'))).toBe(
+      true,
+    )
   })
 })

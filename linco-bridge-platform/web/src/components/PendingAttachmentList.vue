@@ -16,24 +16,23 @@ const items = computed(() => mapOutboundFilesToAttachments(props.files))
 </script>
 
 <template>
-  <view v-if="files.length > 0" class="pending-attachments">
-    <view
+  <div v-if="files.length > 0" class="pending-attachments">
+    <div
       v-for="(item, index) in items"
       :key="`${item.name}-${index}`"
       class="pending-attachments__item"
     >
-      <image
+      <img
         v-if="isImageAttachment(item) && item.previewUrl"
         class="pending-attachments__image"
         :src="item.previewUrl"
-        mode="aspectFill"
       />
-      <view v-else class="pending-attachments__file">
-        <text class="pending-attachments__file-name text-ellipsis">{{ item.name }}</text>
-      </view>
-      <view class="pending-attachments__remove" @tap="emit('remove', index)">×</view>
-    </view>
-  </view>
+      <div v-else class="pending-attachments__file">
+        <span class="pending-attachments__file-name text-ellipsis">{{ item.name }}</span>
+      </div>
+      <div class="pending-attachments__remove" @click="emit('remove', index)">×</div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

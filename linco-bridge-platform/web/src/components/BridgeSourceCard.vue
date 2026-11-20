@@ -18,20 +18,22 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <view
+  <div
     class="source-card"
     :class="{ 'source-card--embedded': embedded }"
-    @tap.stop="emit('select', item)"
+    @click.stop="emit('select', item)"
   >
-    <view class="source-card__icon-wrap">
-      <image class="source-card__icon" :src="item.icon" mode="aspectFit" />
-    </view>
-    <view class="source-card__content">
-      <text class="source-card__title">{{ item.title }}</text>
-      <text v-if="!embedded && item.subtitle" class="source-card__subtitle">{{ item.subtitle }}</text>
-    </view>
-    <text class="source-card__chevron">›</text>
-  </view>
+    <div class="source-card__icon-wrap">
+      <img class="source-card__icon" :src="item.icon" />
+    </div>
+    <div class="source-card__content">
+      <span class="source-card__title">{{ item.title }}</span>
+      <span v-if="!embedded && item.subtitle" class="source-card__subtitle">{{
+        item.subtitle
+      }}</span>
+    </div>
+    <span class="source-card__chevron">›</span>
+  </div>
 </template>
 
 <style scoped lang="scss">

@@ -33,10 +33,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <view class="thinking-entry" @tap="emit('tap')">
-    <text class="thinking-entry__label">思考过程 · {{ durationLabel }}</text>
-    <text class="thinking-entry__arrow">›</text>
-  </view>
+  <div class="thinking-entry" @click="emit('tap')">
+    <span class="thinking-entry__label">思考过程 · {{ durationLabel }}</span>
+    <span class="thinking-entry__arrow">›</span>
+  </div>
 </template>
 
 <style scoped lang="scss">

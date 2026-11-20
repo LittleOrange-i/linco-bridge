@@ -25,41 +25,43 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <view v-if="isBatchMode" class="history-top history-top--batch">
-    <view class="history-top__select-all" @tap="emit('toggleAll')">
-      <view class="history-top__circle" :class="{ 'history-top__circle--selected': allSelected }">
-        <text v-if="allSelected" class="history-top__checkmark">✓</text>
-      </view>
-      <text class="history-top__select-all-text">全选</text>
-    </view>
-    <text class="history-top__text-btn" @tap="emit('cancelBatch')">取消</text>
-  </view>
+  <div v-if="isBatchMode" class="history-top history-top--batch">
+    <div class="history-top__select-all" @click="emit('toggleAll')">
+      <div class="history-top__circle" :class="{ 'history-top__circle--selected': allSelected }">
+        <span v-if="allSelected" class="history-top__checkmark">✓</span>
+      </div>
+      <span class="history-top__select-all-text">全选</span>
+    </div>
+    <span class="history-top__text-btn" @click="emit('cancelBatch')">取消</span>
+  </div>
 
-  <view v-else class="history-top">
-    <view v-if="isSearchMode" class="history-top__leading-spacer" />
-    <view v-else class="history-top__icon-btn" @tap="emit('back')">
-      <text class="history-top__back-icon">‹</text>
-    </view>
+  <div v-else class="history-top">
+    <div v-if="isSearchMode" class="history-top__leading-spacer" />
+    <div v-else class="history-top__icon-btn" @click="emit('back')">
+      <span class="history-top__back-icon">‹</span>
+    </div>
 
-    <view class="history-top__search">
+    <div class="history-top__search">
       <AppSearchBar
+        v-focus="searchFocused"
         :model-value="keyword"
         hint-text="搜索历史对话"
-        :focus="searchFocused"
         @update:model-value="emit('update:keyword', $event)"
         @focus="emit('searchFocus')"
-        @confirm="emit('searchConfirm', $event)"
-        @tap="emit('searchTap')"
+        @keydown.enter="emit('searchConfirm', $event)"
+        @click="emit('searchTap')"
         @clear="emit('searchClear')"
       />
-    </view>
+    </div>
 
-    <text v-if="isSearchMode" class="history-top__text-btn" @tap="emit('cancelSearch')">取消</text>
-    <view v-else class="history-top__icon-btn" @tap="emit('batchTap')">
-      <image class="history-top__more-icon" :src="SEARCH_ICON.more" mode="aspectFit" />
-    </view>
-    <view v-if="isSearchMode" class="history-top__trailing-spacer" />
-  </view>
+    <span v-if="isSearchMode" class="history-top__text-btn" @click="emit('cancelSearch')"
+      >取消</span
+    >
+    <div v-else class="history-top__icon-btn" @click="emit('batchTap')">
+      <img class="history-top__more-icon" :src="SEARCH_ICON.more" />
+    </div>
+    <div v-if="isSearchMode" class="history-top__trailing-spacer" />
+  </div>
 </template>
 
 <style scoped lang="scss">

@@ -78,6 +78,15 @@ VISITOR_SESSION_SECRET=<random-secret>
 
 在线 Demo 部署见 [`../../docs/zh-CN/deploy-demo.md`](../../docs/zh-CN/deploy-demo.md)。当 `PUBLIC_HOST` 为公网域名时，导入页 `setupCommands` 会自动包含 `--ws-url wss://...`。
 
+### Web / Android 客户端配置
+
+后端 API 与前端框架无关，不依赖 UniApp。Vue 3 Web 和 Capacitor Android 都使用同一套 REST/SSE 接口。需要按部署形态配置：
+
+- 本地 Web（Vite `:5173` → Server `:3300`）：开发环境不设置 `CORS_ORIGINS` 即可；前端 `/api` 由 Vite 代理到后端，也可在 `web/local.env` 设置 `VITE_API_BASE_URL=http://127.0.0.1:3300`。
+- Android 模拟器：前端默认请求 `http://10.0.2.2:3300`，后端保持监听 `0.0.0.0`/容器映射 `3300` 即可；无需 CORS。
+- Android 真机或公网 App：在 `web/prod.env` 设置 `VITE_API_BASE_URL=https://<你的后端域名>`；后端设置 `PUBLIC_HOST=<你的后端域名>`、`PUBLIC_HTTP_SCHEME=https`、`PUBLIC_WS_SCHEME=wss`，并设置 `CORS_ORIGINS` 包含实际 Web 域名。Capacitor WebView 以 Origin 形式发请求时会被 CORS 规则约束；若 App 使用的 Origin 不在白名单，请在 `CORS_ORIGINS` 中显式加入 `capacitor://localhost`、`http://localhost` 或 `https://localhost`。
+- 生产环境必须设置 `VISITOR_SESSION_SECRET`；Android 不依赖浏览器 Cookie，必须保存并携带 `/api/visitor/bootstrap` 返回的 `sessionToken`（前端兼容层已写入本地存储并自动加 Header）。
+
 ## API 返回格式
 
 所有 REST 接口统一返回：
@@ -111,7 +120,7 @@ VISITOR_SESSION_SECRET=<random-secret>
 }
 ```
 
-除公开的 bootstrap 和配置接口外，REST 请求需要携带 `linco-bridge-session` HttpOnly Cookie，或在 `X-Linco-Visitor-Session` Header 中携带返回的 token。Cookie 使用 `SameSite=Lax`，并会在生产环境自动标记为 `Secure`。Token 有效期为 365 天；已有有效 Session 再次 bootstrap 时会获得新 token。参考 H5 和小程序客户端会自动处理。该 Session 用于按匿名访客隔离 Bridge 连接、会话和消息；它不是正式账号，也不提供持久的跨设备恢复能力。
+除公开的 bootstrap 和配置接口外，REST 请求需要携带 `linco-bridge-session` HttpOnly Cookie，或在 `X-Linco-Visitor-Session` Header 中携带返回的 token。Cookie 使用 `SameSite=Lax`，并会在生产环境自动标记为 `Secure`。Token 有效期为 365 天；已有有效 Session 再次 bootstrap 时会获得新 token。参考 Web 与 Android 客户端会自动处理：Web 使用 HttpOnly Cookie，Android Capacitor 使用 `X-Linco-Visitor-Session` Header。该 Session 用于按匿名访客隔离 Bridge 连接、会话和消息；它不是正式账号，也不提供持久的跨设备恢复能力。
 
 ### Demo 与会话
 
@@ -223,3 +232,4 @@ npm run test:cov
 | Agent 会话与流式聊天 | IM、P2P、群聊 |
 | 内嵌 `/bridge/ws` | 独立 gateway 微服务 |
 | SQLite | Redis、MongoDB |
+

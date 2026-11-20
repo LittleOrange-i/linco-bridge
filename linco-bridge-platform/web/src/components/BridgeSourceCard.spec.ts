@@ -31,7 +31,7 @@ describe('BridgeSourceCard', () => {
       props: { item: mockItem },
     })
 
-    await wrapper.trigger('tap')
+    await wrapper.trigger('click')
     expect(wrapper.emitted('select')?.[0]).toEqual([mockItem])
   })
 

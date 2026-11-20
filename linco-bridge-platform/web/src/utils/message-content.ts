@@ -33,10 +33,7 @@ export type MessageLinkSegment = {
 }
 
 export type MessageSegment =
-  | MessageTextSegment
-  | MessageCodeSegment
-  | MessageHtmlSegment
-  | MessageLinkSegment
+  MessageTextSegment | MessageCodeSegment | MessageHtmlSegment | MessageLinkSegment
 
 export type ParseMessageOptions = {
   streaming?: boolean
@@ -44,7 +41,10 @@ export type ParseMessageOptions = {
 
 const MARKDOWN_LINK_PATTERN = /\[([^\]]+)\]\(([^)]+)\)/g
 
-export function parseMessageSegments(content: string, options?: ParseMessageOptions): MessageSegment[] {
+export function parseMessageSegments(
+  content: string,
+  options?: ParseMessageOptions,
+): MessageSegment[] {
   const normalized = normalizeCodeFences(content)
   if (!normalized.trim()) return []
   return parseFenceAwareSegments(normalized, options?.streaming === true)

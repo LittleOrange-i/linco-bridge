@@ -19,9 +19,7 @@ const emit = defineEmits<{
 }>()
 
 const titleSegments = computed(() => buildHighlightSegments(props.item.title, props.query))
-const previewText = computed(() =>
-  resolveAgentHistoryPreviewText(props.item, '暂无消息预览'),
-)
+const previewText = computed(() => resolveAgentHistoryPreviewText(props.item, '暂无消息预览'))
 const previewSegments = computed(() => buildHighlightSegments(previewText.value, props.query))
 
 function handleTap() {
@@ -38,52 +36,47 @@ function handleToggleSelected() {
 </script>
 
 <template>
-  <view
-    class="history-search-row"
-    @tap="handleTap"
-    @longpress="handleLongPress"
-  >
-    <view
-      v-if="isBatchMode"
-      class="history-search-row__check"
-      @tap.stop="handleToggleSelected"
-    >
-      <view class="history-search-row__circle" :class="{ 'history-search-row__circle--selected': selected }">
-        <text v-if="selected" class="history-search-row__checkmark">✓</text>
-      </view>
-    </view>
+  <div class="history-search-row" @click="handleTap" @longpress="handleLongPress">
+    <div v-if="isBatchMode" class="history-search-row__check" @click.stop="handleToggleSelected">
+      <div
+        class="history-search-row__circle"
+        :class="{ 'history-search-row__circle--selected': selected }"
+      >
+        <span v-if="selected" class="history-search-row__checkmark">✓</span>
+      </div>
+    </div>
 
-    <view class="history-search-row__content">
-      <view class="history-search-row__title-line">
-        <view v-if="item.unread" class="history-search-row__dot" />
-        <text class="history-search-row__title text-ellipsis">
-          <text
+    <div class="history-search-row__content">
+      <div class="history-search-row__title-line">
+        <div v-if="item.unread" class="history-search-row__dot" />
+        <span class="history-search-row__title text-ellipsis">
+          <span
             v-for="(segment, index) in titleSegments"
             :key="`title-${index}`"
             :class="{ 'history-search-row__highlight': segment.highlight }"
           >
             {{ segment.text }}
-          </text>
-        </text>
-      </view>
+          </span>
+        </span>
+      </div>
 
-      <view class="history-search-row__preview-line">
-        <text class="history-search-row__preview">
-          <text
+      <div class="history-search-row__preview-line">
+        <span class="history-search-row__preview">
+          <span
             v-for="(segment, index) in previewSegments"
             :key="`preview-${index}`"
             :class="{ 'history-search-row__highlight': segment.highlight }"
           >
             {{ segment.text }}
-          </text>
-        </text>
-      </view>
+          </span>
+        </span>
+      </div>
 
-      <text class="history-search-row__time">{{ formatConversationTime(item.updatedAt) }}</text>
-    </view>
+      <span class="history-search-row__time">{{ formatConversationTime(item.updatedAt) }}</span>
+    </div>
 
-    <text v-if="!isBatchMode" class="history-search-row__chevron">›</text>
-  </view>
+    <span v-if="!isBatchMode" class="history-search-row__chevron">›</span>
+  </div>
 </template>
 
 <style scoped lang="scss">

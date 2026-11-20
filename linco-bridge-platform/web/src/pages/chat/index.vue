@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { onLoad, onShow } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@/composables/uni-lifecycle'
 import { computed, ref, watch } from 'vue'
 import AgentLandingAppBar from '@/components/AgentLandingAppBar.vue'
-import AppOverlayHost from '@/components/AppOverlayHost.vue'
 import ChatBubble from '@/components/ChatBubble.vue'
 import ChatInputArea from '@/components/ChatInputArea.vue'
 import { parseAgentTypeFromQuery, resolveSessionAgentType } from '@/bridge/sdk/agent-chat'
@@ -101,7 +100,7 @@ onLoad((query) => {
   const id = String(query?.sessionId ?? '')
   routeSessionId.value = id
   routeReloadHistory.value =
-    query?.reloadHistory === '1' || query?.reloadHistory === 'true' || query?.reloadHistory === true
+    query?.reloadHistory === '1' || query?.reloadHistory === 'true' || false
   const initialDraft = query?.draft ? decodeURIComponent(String(query.draft)) : undefined
   queryAgentType.value = parseAgentTypeFromQuery(String(query?.agentType ?? ''))
   if (id) {
@@ -139,10 +138,12 @@ function followLatestOutput() {
   if (followLatest.value.following) scrollToBottom()
 }
 
-function handleMessageScroll(event: { detail: { scrollTop?: number } }) {
-  const scrollTop = Number(event.detail.scrollTop)
+function handleMessageScroll(event: Event) {
+  const el = event.target as HTMLElement | null
+  const scrollTop = Number(el?.scrollTop)
   if (!Number.isFinite(scrollTop)) return
-  followLatest.value = updateChatFollowState(followLatest.value, { scrollTop })
+  const reachedBottom = Boolean(el && el.scrollTop + el.clientHeight >= el.scrollHeight - 80)
+  followLatest.value = updateChatFollowState(followLatest.value, { scrollTop, reachedBottom })
 }
 
 function handleMessageScrollToLower() {
@@ -230,7 +231,7 @@ async function handlePickSettings() {
 </script>
 
 <template>
-  <view class="page-container chat-page">
+  <div class="page-container chat-page">
     <AgentLandingAppBar
       v-if="header"
       :title="header.title"
@@ -241,37 +242,33 @@ async function handlePickSettings() {
       @workspace="handleWorkspace"
     />
 
-    <scroll-view
-      class="chat-page__messages"
-      scroll-y
-      refresher-enabled
-      :refresher-triggered="refreshing"
-      :scroll-with-animation="true"
-      :scroll-into-view="scrollAnchor"
+    <div
+      class="uni-scroll-view chat-page__messages"
+      :data-scroll-anchor="scrollAnchor"
       :lower-threshold="120"
       @refresherrefresh="handleRefresh"
       @scroll="handleMessageScroll"
       @scrolltolower="handleMessageScrollToLower"
     >
-      <view v-if="loading && messages.length === 0 && !sending" class="chat-page__state">
-        <text class="chat-page__state-text">加载中…</text>
-      </view>
+      <div v-if="loading && messages.length === 0 && !sending" class="chat-page__state">
+        <span class="chat-page__state-text">加载中…</span>
+      </div>
 
-      <view v-else-if="messages.length === 0 && !sending" class="chat-page__state">
-        <text class="chat-page__state-text">发送消息开始对话</text>
-      </view>
+      <div v-else-if="messages.length === 0 && !sending" class="chat-page__state">
+        <span class="chat-page__state-text">发送消息开始对话</span>
+      </div>
 
-      <view v-else class="chat-page__list">
+      <div v-else class="chat-page__list">
         <ChatBubble
           v-for="item in messages"
           :key="item.id"
           :message="item"
           @layout-change="followLatestOutput"
         />
-      </view>
+      </div>
 
-      <view id="chat-bottom" class="chat-page__bottom-spacer" />
-    </scroll-view>
+      <div id="chat-bottom" class="chat-page__bottom-spacer" />
+    </div>
 
     <ChatInputArea
       v-model="draft"
@@ -290,10 +287,7 @@ async function handlePickSettings() {
       @remove-file="removeFile"
       @pick-settings="handlePickSettings"
     />
-    <!-- #ifndef H5 -->
-    <AppOverlayHost />
-    <!-- #endif -->
-  </view>
+  </div>
 </template>
 
 <style scoped lang="scss">

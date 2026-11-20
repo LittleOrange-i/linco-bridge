@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onLoad, onShow } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@/composables/uni-lifecycle'
 import { computed, ref } from 'vue'
 
 import AppNavBar from '@/components/AppNavBar.vue'
@@ -68,8 +68,7 @@ function confirmDelete() {
   if (!detail.value || deleting.value || !connectionId.value) return
   uni.showModal({
     title: '删除机器人',
-    content:
-      `确定删除「${detail.value.displayName}」？\n\n删除后机器人将从 Linco 中移除，同时 APP 会向绑定电脑发送同步删除桥接指令。电脑端确认后会删除本地桥接配置并断开连接。`,
+    content: `确定删除「${detail.value.displayName}」？\n\n删除后机器人将从 Linco 中移除，同时 APP 会向绑定电脑发送同步删除桥接指令。电脑端确认后会删除本地桥接配置并断开连接。`,
     confirmText: '删除',
     confirmColor: '#e5484d',
     cancelText: '取消',
@@ -91,99 +90,106 @@ function handleRefresh() {
 </script>
 
 <template>
-  <view class="page-container bot-config-page">
+  <div class="page-container bot-config-page">
     <AppNavBar title="机器人配置" show-back />
 
-    <scroll-view class="bot-config-page__body" scroll-y :show-scrollbar="false">
-      <view v-if="loading && !detail" class="bot-config-page__loading">
-        <text class="bot-config-page__loading-text">加载中…</text>
-      </view>
+    <div class="uni-scroll-view bot-config-page__body">
+      <div v-if="loading && !detail" class="bot-config-page__loading">
+        <span class="bot-config-page__loading-text">加载中…</span>
+      </div>
 
-      <view v-else-if="error && !detail" class="bot-config-page__error">
-        <text class="bot-config-page__error-text">{{ error }}</text>
-      </view>
+      <div v-else-if="error && !detail" class="bot-config-page__error">
+        <span class="bot-config-page__error-text">{{ error }}</span>
+      </div>
 
       <template v-else-if="detail">
-        <view class="bot-config-page__hero">
-          <image class="bot-config-page__avatar" :src="detail.avatar" mode="aspectFill" />
-          <view class="bot-config-page__title-row" @tap="promptRename">
-            <text class="bot-config-page__title">{{ detail.displayName }}</text>
-            <text class="bot-config-page__edit-icon">✎</text>
-          </view>
-          <text class="bot-config-page__subtitle">{{ detail.description }}</text>
-        </view>
+        <div class="bot-config-page__hero">
+          <img class="bot-config-page__avatar" :src="detail.avatar" />
+          <div class="bot-config-page__title-row" @click="promptRename">
+            <span class="bot-config-page__title">{{ detail.displayName }}</span>
+            <span class="bot-config-page__edit-icon">✎</span>
+          </div>
+          <span class="bot-config-page__subtitle">{{ detail.description }}</span>
+        </div>
 
-        <view class="bot-config-page__section-head">
-          <text class="bot-config-page__section-title">连接配置</text>
-          <view class="bot-config-page__status-wrap">
-            <view
+        <div class="bot-config-page__section-head">
+          <span class="bot-config-page__section-title">连接配置</span>
+          <div class="bot-config-page__status-wrap">
+            <div
               class="bot-config-page__refresh"
               :class="{ 'bot-config-page__refresh--spinning': refreshing }"
-              @tap="handleRefresh"
+              @click="handleRefresh"
             />
-            <view
+            <div
               class="bot-config-page__status-dot"
               :class="{ 'bot-config-page__status-dot--online': isOnline }"
             />
-            <text class="bot-config-page__status-text">{{ isOnline ? '在线' : '离线' }}</text>
-          </view>
-        </view>
+            <span class="bot-config-page__status-text">{{ isOnline ? '在线' : '离线' }}</span>
+          </div>
+        </div>
 
-        <view class="bot-config-page__card">
-          <view class="bot-config-page__row">
-            <text class="bot-config-page__label">App ID</text>
-            <text class="bot-config-page__value">{{ detail.appId || '加载中' }}</text>
-          </view>
-          <view class="bot-config-page__divider" />
-          <view class="bot-config-page__row">
-            <text class="bot-config-page__label">App Secret</text>
-            <view class="bot-config-page__secret">
-              <text class="bot-config-page__value bot-config-page__value--secret">{{ secretLabel }}</text>
-              <text class="bot-config-page__eye" @tap.stop="toggleSecretVisibility">
+        <div class="bot-config-page__card">
+          <div class="bot-config-page__row">
+            <span class="bot-config-page__label">App ID</span>
+            <span class="bot-config-page__value">{{ detail.appId || '加载中' }}</span>
+          </div>
+          <div class="bot-config-page__divider" />
+          <div class="bot-config-page__row">
+            <span class="bot-config-page__label">App Secret</span>
+            <div class="bot-config-page__secret">
+              <span class="bot-config-page__value bot-config-page__value--secret">{{
+                secretLabel
+              }}</span>
+              <span class="bot-config-page__eye" @click.stop="toggleSecretVisibility">
                 {{ showSecret ? '🙈' : '👁' }}
-              </text>
-            </view>
-          </view>
-          <view class="bot-config-page__divider" />
-          <view class="bot-config-page__row">
-            <text class="bot-config-page__label">最近在线</text>
-            <text class="bot-config-page__value">{{ formatLastSeen(detail.lastSeenAt) }}</text>
-          </view>
-          <view class="bot-config-page__divider" />
-          <view class="bot-config-page__row">
-            <text class="bot-config-page__label">设备</text>
-            <text class="bot-config-page__value">{{ detail.deviceName?.trim() || '未绑定设备' }}</text>
-          </view>
-          <view class="bot-config-page__divider" />
-          <view class="bot-config-page__row">
-            <text class="bot-config-page__label">插件版本</text>
-            <text class="bot-config-page__value">{{ detail.clientVersion?.trim() || '未知' }}</text>
-          </view>
-        </view>
+              </span>
+            </div>
+          </div>
+          <div class="bot-config-page__divider" />
+          <div class="bot-config-page__row">
+            <span class="bot-config-page__label">最近在线</span>
+            <span class="bot-config-page__value">{{ formatLastSeen(detail.lastSeenAt) }}</span>
+          </div>
+          <div class="bot-config-page__divider" />
+          <div class="bot-config-page__row">
+            <span class="bot-config-page__label">设备</span>
+            <span class="bot-config-page__value">{{
+              detail.deviceName?.trim() || '未绑定设备'
+            }}</span>
+          </div>
+          <div class="bot-config-page__divider" />
+          <div class="bot-config-page__row">
+            <span class="bot-config-page__label">插件版本</span>
+            <span class="bot-config-page__value">{{ detail.clientVersion?.trim() || '未知' }}</span>
+          </div>
+        </div>
 
-        <view class="bot-config-page__actions">
-          <view class="bot-config-page__primary-btn" @tap="copySetupCommand(agentType, connectionId)">
-            <text class="bot-config-page__primary-btn-text">一键复制配置命令</text>
-          </view>
-          <view
+        <div class="bot-config-page__actions">
+          <div
+            class="bot-config-page__primary-btn"
+            @click="copySetupCommand(agentType, connectionId)"
+          >
+            <span class="bot-config-page__primary-btn-text">一键复制配置命令</span>
+          </div>
+          <div
             class="bot-config-page__danger-btn"
             :class="{ 'bot-config-page__danger-btn--disabled': deleting }"
-            @tap="confirmDelete"
+            @click="confirmDelete"
           >
-            <text class="bot-config-page__danger-btn-text">
+            <span class="bot-config-page__danger-btn-text">
               {{ deleting ? '删除中…' : '删除机器人' }}
-            </text>
-          </view>
-        </view>
+            </span>
+          </div>
+        </div>
 
-        <view v-if="!isOnline" class="bot-config-page__hint">
-          <text class="bot-config-page__hint-text">
+        <div v-if="!isOnline" class="bot-config-page__hint">
+          <span class="bot-config-page__hint-text">
             提示：若电脑端已关闭，请在电脑终端重新运行 linco-connect start --daemon
-          </text>
-        </view>
+          </span>
+        </div>
       </template>
-    </scroll-view>
-  </view>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

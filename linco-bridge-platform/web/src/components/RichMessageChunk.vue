@@ -19,7 +19,7 @@ const segments = computed(() => parseMessageSegments(props.content, { streaming:
 </script>
 
 <template>
-  <view class="rich-message-chunk">
+  <div class="rich-message-chunk">
     <template v-for="(segment, index) in segments" :key="`${segment.type}-${index}`">
       <ChatHtmlBlock
         v-if="segment.type === 'html'"
@@ -42,7 +42,7 @@ const segments = computed(() => parseMessageSegments(props.content, { streaming:
         @link-tap="emit('linkTap', $event)"
       />
     </template>
-  </view>
+  </div>
 </template>
 
 <style scoped lang="scss">

@@ -1,23 +1,13 @@
 import type { SlashCommandItem } from '@/bridge/slash-command'
 import type { AgentBridgeType } from '@/bridge/types'
 
-const STORAGE_PREFIX = 'linco_bridge_slash_commands_v1'
 export const SLASH_COMMANDS_SHARED_SCOPE = '__shared__'
-
+const STORAGE_PREFIX = 'linco_bridge_slash_commands_v1'
 const memoryCache = new Map<string, SlashCommandItem[]>()
 
-interface SlashCommandCacheRecord {
-  items: SlashCommandItem[]
+interface SlashCommandCacheRecord<T> {
+  items: T[]
   updatedAt: number
-}
-
-function normalizeConnectionId(connectionId?: string): string {
-  return connectionId?.trim() || 'default'
-}
-
-function normalizeScopeKey(sessionId?: string): string {
-  const normalized = sessionId?.trim() ?? ''
-  return normalized || SLASH_COMMANDS_SHARED_SCOPE
 }
 
 export function slashCommandsMemoryKey(
@@ -25,56 +15,33 @@ export function slashCommandsMemoryKey(
   connectionId?: string,
   sessionId?: string,
 ): string {
-  return `${agentType}|${normalizeConnectionId(connectionId)}|${normalizeScopeKey(sessionId)}`
+  const normalizedConnectionId = connectionId?.trim() || 'default'
+  const normalizedScope = sessionId?.trim() || SLASH_COMMANDS_SHARED_SCOPE
+  return `${agentType}|${normalizedConnectionId}|${normalizedScope}`
 }
 
-function storageKey(
-  agentType: AgentBridgeType,
-  connectionId: string,
-  scopeKey: string,
-): string {
+function storageKey(agentType: AgentBridgeType, connectionId: string, scopeKey: string): string {
   return `${STORAGE_PREFIX}:${agentType}:${connectionId}:${scopeKey}`
 }
 
-function readStorage(key: string): SlashCommandItem[] | null {
+function readCache<T>(key: string): T[] | null {
   try {
-    const raw = uni.getStorageSync(key)
+    const raw = localStorage.getItem(key)
     if (!raw) return null
-    const parsed =
-      typeof raw === 'string'
-        ? (JSON.parse(raw) as SlashCommandCacheRecord)
-        : (raw as SlashCommandCacheRecord)
-    if (!Array.isArray(parsed.items)) return null
-    return parsed.items
+    const parsed = JSON.parse(raw) as SlashCommandCacheRecord<T>
+    return Array.isArray(parsed.items) ? parsed.items : null
   } catch {
     return null
   }
 }
 
-function writeStorage(key: string, items: SlashCommandItem[]): void {
-  const record: SlashCommandCacheRecord = {
-    items,
-    updatedAt: Date.now(),
-  }
+function writeCache<T>(key: string, items: T[]): void {
   try {
-    uni.setStorageSync(key, JSON.stringify(record))
+    const record: SlashCommandCacheRecord<T> = { items, updatedAt: Date.now() }
+    localStorage.setItem(key, JSON.stringify(record))
   } catch {
-    // ignore quota / unavailable storage
+    // ignore storage errors
   }
-}
-
-function cacheInMemory(
-  agentType: AgentBridgeType,
-  connectionId: string,
-  scopeKey: string,
-  items: SlashCommandItem[],
-): void {
-  const immutable = [...items]
-  memoryCache.set(slashCommandsMemoryKey(agentType, connectionId, scopeKey), immutable)
-  memoryCache.set(
-    slashCommandsMemoryKey(agentType, connectionId, SLASH_COMMANDS_SHARED_SCOPE),
-    immutable,
-  )
 }
 
 export function readSlashCommandsFromCache(
@@ -82,36 +49,16 @@ export function readSlashCommandsFromCache(
   connectionId?: string,
   sessionId?: string,
 ): SlashCommandItem[] {
-  const normalizedConnectionId = normalizeConnectionId(connectionId)
-  const scopeKey = normalizeScopeKey(sessionId)
-
-  const scopedMemory = memoryCache.get(
-    slashCommandsMemoryKey(agentType, normalizedConnectionId, scopeKey),
-  )
-  if (scopedMemory?.length) return [...scopedMemory]
-
-  const sharedMemory = memoryCache.get(
-    slashCommandsMemoryKey(agentType, normalizedConnectionId, SLASH_COMMANDS_SHARED_SCOPE),
-  )
-  if (sharedMemory?.length) return [...sharedMemory]
-
-  const scopedPersisted = readStorage(
-    storageKey(agentType, normalizedConnectionId, scopeKey),
-  )
-  if (scopedPersisted?.length) {
-    cacheInMemory(agentType, normalizedConnectionId, scopeKey, scopedPersisted)
-    return [...scopedPersisted]
-  }
-
-  const sharedPersisted = readStorage(
-    storageKey(agentType, normalizedConnectionId, SLASH_COMMANDS_SHARED_SCOPE),
-  )
-  if (sharedPersisted?.length) {
-    cacheInMemory(agentType, normalizedConnectionId, SLASH_COMMANDS_SHARED_SCOPE, sharedPersisted)
-    return [...sharedPersisted]
-  }
-
-  return []
+  const memoryKey = slashCommandsMemoryKey(agentType, connectionId, sessionId)
+  const cached = memoryCache.get(memoryKey)
+  if (cached) return cached
+  const normalizedConnectionId = connectionId?.trim() || 'default'
+  const normalizedScope = sessionId?.trim() || SLASH_COMMANDS_SHARED_SCOPE
+  const items =
+    readCache<SlashCommandItem>(storageKey(agentType, normalizedConnectionId, normalizedScope)) ??
+    []
+  if (items.length > 0) memoryCache.set(memoryKey, items)
+  return items
 }
 
 export function writeSlashCommandsToCache(
@@ -120,17 +67,12 @@ export function writeSlashCommandsToCache(
   sessionId: string | undefined,
   items: SlashCommandItem[],
 ): void {
-  if (items.length === 0) return
-  const normalizedConnectionId = normalizeConnectionId(connectionId)
-  const scopeKey = normalizeScopeKey(sessionId)
-  cacheInMemory(agentType, normalizedConnectionId, scopeKey, items)
-  writeStorage(storageKey(agentType, normalizedConnectionId, scopeKey), items)
-  writeStorage(
-    storageKey(agentType, normalizedConnectionId, SLASH_COMMANDS_SHARED_SCOPE),
-    items,
-  )
+  const normalizedConnectionId = connectionId?.trim() || 'default'
+  const normalizedScope = sessionId?.trim() || SLASH_COMMANDS_SHARED_SCOPE
+  memoryCache.set(slashCommandsMemoryKey(agentType, connectionId, sessionId), items)
+  writeCache(storageKey(agentType, normalizedConnectionId, normalizedScope), items)
 }
 
-export function clearSlashCommandCacheForTests(): void {
+export function clearSlashCommandsCacheForTests(): void {
   memoryCache.clear()
 }

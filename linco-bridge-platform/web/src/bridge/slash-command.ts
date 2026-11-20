@@ -39,8 +39,7 @@ export function slashCommandsFromHelpPayload(payload: unknown): SlashCommandItem
     const description = firstString(itemMap, ['description', 'summary', 'title'])
     const displayLabel = label || command
     const hasPlaceholder = displayLabel.includes('<') || displayLabel.includes('[')
-    const appendSpaceOnSelect =
-      itemMap.append_space_on_select === true || hasPlaceholder
+    const appendSpaceOnSelect = itemMap.append_space_on_select === true || hasPlaceholder
 
     commands.push({
       command,

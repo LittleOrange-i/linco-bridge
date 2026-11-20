@@ -7,13 +7,13 @@ import IosActionSheetHost from '@/components/IosActionSheetHost.vue'
 </script>
 
 <template>
-  <view class="app-overlay-host">
+  <div class="app-overlay-host">
     <IosActionSheetHost />
     <BridgeWorkspacePickerSheet />
     <BridgeSettingsPickerSheet />
     <BridgeContextPickerSheet />
     <AgentSidePanel />
-  </view>
+  </div>
 </template>
 
 <style scoped lang="scss">

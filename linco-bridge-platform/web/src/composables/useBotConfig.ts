@@ -44,7 +44,11 @@ export function useBotConfig() {
     }
   }
 
-  async function saveDisplayName(agentType: AgentBridgeType, connectionId: string, displayName: string) {
+  async function saveDisplayName(
+    agentType: AgentBridgeType,
+    connectionId: string,
+    displayName: string,
+  ) {
     const normalized = displayName.trim()
     if (!normalized) {
       showToast('名称不能为空')

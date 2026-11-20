@@ -55,7 +55,7 @@ async function handleCopy() {
 </script>
 
 <template>
-  <view class="chat-html">
+  <div class="chat-html">
     <ArtifactBlockHeader
       label="html"
       :can-preview="canPreview"
@@ -64,30 +64,22 @@ async function handleCopy() {
       @toggle-preview="showPreview = $event"
     />
 
-    <!-- #ifdef H5 -->
-    <view v-if="canPreview && showPreview" class="chat-html__preview-wrap">
+    <div v-if="canPreview && showPreview" class="chat-html__preview-wrap">
       <iframe
         class="chat-html__iframe"
         title="html-preview"
         sandbox="allow-scripts allow-same-origin"
         :srcdoc="previewDocument"
       />
-    </view>
-    <scroll-view v-else scroll-y class="chat-html__scroll" :show-scrollbar="false">
+    </div>
+    <div v-else class="uni-scroll-view chat-html__scroll">
       <div class="chat-html__body chat-html__body--highlighted" v-html="highlightedBlockHtml" />
-    </scroll-view>
-    <!-- #endif -->
+    </div>
 
-    <!-- #ifndef H5 -->
-    <scroll-view scroll-y class="chat-html__scroll" :show-scrollbar="false">
-      <text class="chat-html__body" selectable>{{ html }}</text>
-    </scroll-view>
-    <!-- #endif -->
-
-    <view v-if="incomplete || streaming" class="chat-html__streaming">
-      <text class="chat-html__streaming-text">正在输出...</text>
-    </view>
-  </view>
+    <div v-if="incomplete || streaming" class="chat-html__streaming">
+      <span class="chat-html__streaming-text">正在输出...</span>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

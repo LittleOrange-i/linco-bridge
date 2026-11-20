@@ -55,24 +55,23 @@ function handleClear() {
 </script>
 
 <template>
-  <view class="app-search-bar" @tap="handleTap">
-    <image class="app-search-bar__icon" :src="SEARCH_ICON.loupe" mode="aspectFit" />
+  <div class="app-search-bar" @click="handleTap">
+    <img class="app-search-bar__icon" :src="SEARCH_ICON.loupe" />
     <input
+      v-focus="focus"
       class="app-search-bar__input"
       type="text"
       :value="modelValue"
       :placeholder="hintText"
-      placeholder-class="app-search-bar__placeholder"
-      confirm-type="search"
-      :focus="focus"
+      enterkeyhint="search"
       @input="handleInput"
       @focus="handleFocus"
-      @confirm="handleConfirm"
+      @keydown.enter="handleConfirm"
     />
-    <view v-if="showClearButton && hasText" class="app-search-bar__clear" @tap.stop="handleClear">
-      <text class="app-search-bar__clear-icon">×</text>
-    </view>
-  </view>
+    <div v-if="showClearButton && hasText" class="app-search-bar__clear" @click.stop="handleClear">
+      <span class="app-search-bar__clear-icon">×</span>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

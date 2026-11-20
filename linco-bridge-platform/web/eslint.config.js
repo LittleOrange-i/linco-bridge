@@ -6,7 +6,7 @@ import skipFormatting from '@vue/eslint-config-prettier'
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'unpackage/**', 'scripts/**'],
+    ignores: ['dist/**', 'node_modules/**', 'unpackage/**', 'scripts/**', 'android/**'],
   },
   eslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
@@ -16,6 +16,8 @@ export default tseslint.config(
     files: ['**/*.{ts,vue}'],
     rules: {
       'vue/multi-word-component-names': 'off',
+      'vue/no-v-html': 'off',
+      'vue/require-default-prop': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

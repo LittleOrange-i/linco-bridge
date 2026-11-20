@@ -1,7 +1,4 @@
-import {
-  getVisitorSessionToken,
-  setVisitorSessionToken,
-} from '@/utils/visitor-session'
+import { getVisitorSessionToken, setVisitorSessionToken } from '@/utils/visitor-session'
 import { buildApiUrl, requestJson } from './http-transport'
 
 export interface VisitorBootstrapResult {

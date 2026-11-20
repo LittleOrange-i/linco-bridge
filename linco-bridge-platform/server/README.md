@@ -78,6 +78,15 @@ Multiple CORS origins can be separated with commas. `CORS_ORIGINS` applies to br
 
 Hosted demo deployment: [`../../docs/deploy-demo.md`](../../docs/deploy-demo.md). Non-loopback `PUBLIC_HOST` embeds `--ws-url wss://...` in setup commands.
 
+### Web / Android clients
+
+The backend API is framework-agnostic and does not depend on UniApp. Vue 3 Web and Capacitor Android use the same REST/SSE endpoints. Configure by deployment mode:
+
+- Local Web (`Vite :5173` -> Server `:3300`): leave `CORS_ORIGINS` unset in development; the Vite proxy forwards `/api`, or set `VITE_API_BASE_URL=http://127.0.0.1:3300` in `web/local.env`.
+- Android emulator: the frontend defaults to `http://10.0.2.2:3300`; the backend only needs to listen on port `3300`. No CORS is required for native WebView origin-less requests.
+- Android device/public app: set `VITE_API_BASE_URL=https://<backend-domain>` in `web/prod.env`; set `PUBLIC_HOST=<backend-domain>`, `PUBLIC_HTTP_SCHEME=https`, `PUBLIC_WS_SCHEME=wss`, and list the real Web origin in `CORS_ORIGINS`. If the Capacitor WebView sends a `capacitor://localhost` / `http://localhost` / `https://localhost` origin and it is rejected, add that exact origin to `CORS_ORIGINS`.
+- Production must set `VISITOR_SESSION_SECRET`. Android cannot rely on browser cookies, so it must persist and send the `sessionToken` returned by `/api/visitor/bootstrap`; the frontend compatibility layer already does this.
+
 ## API Shape
 
 All REST responses use:
@@ -111,7 +120,7 @@ Example response:
 }
 ```
 
-Except for public bootstrap and configuration endpoints, REST requests must carry either the `linco-bridge-session` HttpOnly cookie or the returned token in the `X-Linco-Visitor-Session` header. The cookie uses `SameSite=Lax` and is marked `Secure` in production. Tokens expire after 365 days, and a successful bootstrap of an existing session issues a fresh token. The reference H5 and Mini Program clients handle this automatically. The visitor session scopes bridge connections, sessions, and messages to the current anonymous visitor; it is not a formal account and does not provide durable cross-device recovery.
+Except for public bootstrap and configuration endpoints, REST requests must carry either the `linco-bridge-session` HttpOnly cookie or the returned token in the `X-Linco-Visitor-Session` header. The cookie uses `SameSite=Lax` and is marked `Secure` in production. Tokens expire after 365 days, and a successful bootstrap of an existing session issues a fresh token. The reference Web and Android clients handle this automatically: Web uses the HttpOnly cookie, while Capacitor/Android stores and sends the `X-Linco-Visitor-Session` header. The visitor session scopes bridge connections, sessions, and messages to the current anonymous visitor; it is not a formal account and does not provide durable cross-device recovery.
 
 ### Demo and sessions
 
@@ -223,3 +232,4 @@ npm run test:cov
 | Agent sessions and streaming chat | IM, P2P, and group chat |
 | Embedded `/bridge/ws` | Separate gateway microservice |
 | SQLite | Redis and MongoDB |
+

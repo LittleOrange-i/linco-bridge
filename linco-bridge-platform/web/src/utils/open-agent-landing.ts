@@ -54,7 +54,10 @@ export function openSessionLanding(item: ChatSessionItem): void {
   })
 }
 
-function buildChatIndexUrl(sessionId: string, options?: { agentType?: AgentBridgeType | null; reloadHistory?: boolean }): string {
+function buildChatIndexUrl(
+  sessionId: string,
+  options?: { agentType?: AgentBridgeType | null; reloadHistory?: boolean },
+): string {
   let params = createQueryParams({ sessionId })
   params = appendAgentTypeQuery(params, options?.agentType ?? null)
   if (options?.reloadHistory) {

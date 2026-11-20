@@ -266,77 +266,77 @@ function handleDismiss() {
 </script>
 
 <template>
-  <view
+  <div
     v-if="bridgeWorkspacePickerState.visible"
     class="workspace-sheet"
-    @tap="handleDismiss"
+    @click="handleDismiss"
     @touchmove.stop.prevent
   >
-    <view class="workspace-sheet__backdrop" />
+    <div class="workspace-sheet__backdrop" />
 
-    <view class="workspace-sheet__panel" @tap.stop>
-      <view class="workspace-sheet__handle-wrap">
-        <view class="workspace-sheet__handle" />
-      </view>
-      <text class="workspace-sheet__title">选择项目 / 会话</text>
-      <view class="workspace-sheet__divider" />
+    <div class="workspace-sheet__panel" @click.stop>
+      <div class="workspace-sheet__handle-wrap">
+        <div class="workspace-sheet__handle" />
+      </div>
+      <span class="workspace-sheet__title">选择项目 / 会话</span>
+      <div class="workspace-sheet__divider" />
 
-      <view class="workspace-sheet__sync">
-        <text class="workspace-sheet__sync-label">
+      <div class="workspace-sheet__sync">
+        <span class="workspace-sheet__sync-label">
           {{ loadingProjects || refreshingProjects ? '正在同步' : '已同步到刚刚' }}
-        </text>
-        <text
+        </span>
+        <span
           class="workspace-sheet__sync-action"
           :class="{ 'workspace-sheet__sync-action--disabled': loadingProjects }"
-          @tap="loadProjects(true)"
+          @click="loadProjects(true)"
         >
           同步最新
-        </text>
-      </view>
-      <view class="workspace-sheet__divider" />
+        </span>
+      </div>
+      <div class="workspace-sheet__divider" />
 
-      <scroll-view scroll-y class="workspace-sheet__body" :show-scrollbar="false">
-        <view v-if="loadingProjects" class="workspace-sheet__center">
-          <text class="workspace-sheet__hint">正在同步项目…</text>
-        </view>
-        <view v-else-if="error" class="workspace-sheet__center">
-          <text class="workspace-sheet__error">{{ error }}</text>
-        </view>
-        <view v-else-if="projects.length === 0" class="workspace-sheet__center">
-          <text class="workspace-sheet__hint">暂无已同步项目</text>
-        </view>
+      <div class="uni-scroll-view workspace-sheet__body">
+        <div v-if="loadingProjects" class="workspace-sheet__center">
+          <span class="workspace-sheet__hint">正在同步项目…</span>
+        </div>
+        <div v-else-if="error" class="workspace-sheet__center">
+          <span class="workspace-sheet__error">{{ error }}</span>
+        </div>
+        <div v-else-if="projects.length === 0" class="workspace-sheet__center">
+          <span class="workspace-sheet__hint">暂无已同步项目</span>
+        </div>
 
-        <view v-else class="workspace-sheet__list">
-          <view
+        <div v-else class="workspace-sheet__list">
+          <div
             v-for="project in projects"
             :key="project.path"
             class="workspace-sheet__project-block"
           >
-            <view class="workspace-sheet__project-row" @tap="toggleExpanded(project.path)">
-              <image class="workspace-sheet__folder" :src="CHAT_ICON.folder" mode="aspectFit" />
-              <text class="workspace-sheet__project-name">{{ project.name }}</text>
-              <view
+            <div class="workspace-sheet__project-row" @click="toggleExpanded(project.path)">
+              <img class="workspace-sheet__folder" :src="CHAT_ICON.folder" />
+              <span class="workspace-sheet__project-name">{{ project.name }}</span>
+              <div
                 v-if="refreshingSessionPaths.includes(project.path)"
                 class="workspace-sheet__spinner workspace-sheet__spinner--sm"
               />
-              <view
+              <div
                 class="workspace-sheet__icon-btn"
-                @tap.stop="handleCreateProjectSession(project)"
+                @click.stop="handleCreateProjectSession(project)"
               >
-                <text
+                <span
                   v-if="selectingKey === `project:${project.path}`"
                   class="workspace-sheet__spinner-text"
-                  >…</text
+                  >…</span
                 >
-                <text v-else class="workspace-sheet__plus">+</text>
-              </view>
-              <text class="workspace-sheet__chevron">{{
+                <span v-else class="workspace-sheet__plus">+</span>
+              </div>
+              <span class="workspace-sheet__chevron">{{
                 isExpanded(project.path) ? '▾' : '▸'
-              }}</text>
-            </view>
+              }}</span>
+            </div>
 
-            <view v-if="isExpanded(project.path)" class="workspace-sheet__sessions">
-              <view
+            <div v-if="isExpanded(project.path)" class="workspace-sheet__sessions">
+              <div
                 v-if="
                   loadingSessionPaths.includes(project.path) &&
                   !sessionsByProject[project.path]?.length
@@ -344,91 +344,91 @@ function handleDismiss() {
                 class="workspace-sheet__session-placeholder"
               >
                 暂无会话
-              </view>
-              <view
+              </div>
+              <div
                 v-else-if="!sessionsByProject[project.path]?.length"
                 class="workspace-sheet__session-placeholder"
               >
                 暂无会话
-              </view>
+              </div>
               <template v-else>
-                <view
+                <div
                   v-for="session in visibleSessions(project.path)"
                   :key="session.id"
                   class="workspace-sheet__session-row"
-                  @tap="handleSelectSession(project, session)"
+                  @click="handleSelectSession(project, session)"
                 >
-                  <text class="workspace-sheet__session-title">{{ session.title }}</text>
-                  <text v-if="session.timeText" class="workspace-sheet__session-time">{{
+                  <span class="workspace-sheet__session-title">{{ session.title }}</span>
+                  <span v-if="session.timeText" class="workspace-sheet__session-time">{{
                     session.timeText
-                  }}</text>
-                  <view
+                  }}</span>
+                  <div
                     v-if="selectingKey === `session:${project.path}:${session.id}`"
                     class="workspace-sheet__spinner workspace-sheet__spinner--xs"
                   />
-                </view>
-                <view
+                </div>
+                <div
                   v-if="(sessionsByProject[project.path]?.length ?? 0) > VISIBLE_SESSION_COUNT"
                   class="workspace-sheet__more"
-                  @tap="toggleShowAllSessions(project.path)"
+                  @click="toggleShowAllSessions(project.path)"
                 >
-                  <text>{{ showAllByProject[project.path] ? '收起' : '展开显示更多' }}</text>
-                  <text v-if="!showAllByProject[project.path]" class="workspace-sheet__chevron"
-                    >▸</text
+                  <span>{{ showAllByProject[project.path] ? '收起' : '展开显示更多' }}</span>
+                  <span v-if="!showAllByProject[project.path]" class="workspace-sheet__chevron"
+                    >▸</span
                   >
-                </view>
+                </div>
               </template>
-            </view>
-          </view>
+            </div>
+          </div>
 
           <template v-if="supportsChats">
-            <view class="workspace-sheet__divider workspace-sheet__divider--section" />
-            <view class="workspace-sheet__project-row" @tap="toggleChats">
-              <image class="workspace-sheet__folder" :src="CHAT_ICON.folder" mode="aspectFit" />
-              <text class="workspace-sheet__project-name">对话</text>
-              <view
+            <div class="workspace-sheet__divider workspace-sheet__divider--section" />
+            <div class="workspace-sheet__project-row" @click="toggleChats">
+              <img class="workspace-sheet__folder" :src="CHAT_ICON.folder" />
+              <span class="workspace-sheet__project-name">对话</span>
+              <div
                 v-if="refreshingChats"
                 class="workspace-sheet__spinner workspace-sheet__spinner--sm"
               />
-              <text class="workspace-sheet__chevron">{{ chatsExpanded ? '▾' : '▸' }}</text>
-            </view>
-            <view v-if="chatsExpanded" class="workspace-sheet__sessions">
-              <view
+              <span class="workspace-sheet__chevron">{{ chatsExpanded ? '▾' : '▸' }}</span>
+            </div>
+            <div v-if="chatsExpanded" class="workspace-sheet__sessions">
+              <div
                 v-if="loadingChats && !chats?.length"
                 class="workspace-sheet__session-placeholder"
               >
                 暂无会话
-              </view>
-              <view v-else-if="!chats?.length" class="workspace-sheet__session-placeholder"
-                >暂无会话</view
-              >
+              </div>
+              <div v-else-if="!chats?.length" class="workspace-sheet__session-placeholder">
+                暂无会话
+              </div>
               <template v-else>
-                <view
+                <div
                   v-for="session in visibleChats"
                   :key="session.id"
                   class="workspace-sheet__session-row"
-                  @tap="handleSelectChat(session)"
+                  @click="handleSelectChat(session)"
                 >
-                  <text class="workspace-sheet__session-title">{{ session.title }}</text>
-                  <view
+                  <span class="workspace-sheet__session-title">{{ session.title }}</span>
+                  <div
                     v-if="selectingKey === `chat:${session.id}`"
                     class="workspace-sheet__spinner workspace-sheet__spinner--xs"
                   />
-                </view>
-                <view
+                </div>
+                <div
                   v-if="(chats?.length ?? 0) > VISIBLE_SESSION_COUNT"
                   class="workspace-sheet__more"
-                  @tap="showAllChats = !showAllChats"
+                  @click="showAllChats = !showAllChats"
                 >
-                  <text>{{ showAllChats ? '收起' : '展开显示更多' }}</text>
-                </view>
+                  <span>{{ showAllChats ? '收起' : '展开显示更多' }}</span>
+                </div>
               </template>
-            </view>
+            </div>
           </template>
-        </view>
-      </scroll-view>
-    </view>
-  </view>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

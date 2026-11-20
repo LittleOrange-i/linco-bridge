@@ -1,8 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
-import {
-  filterSlashCommands,
-  type SlashCommandItem,
-} from '@/bridge/slash-command'
+import { filterSlashCommands, type SlashCommandItem } from '@/bridge/slash-command'
 
 export function extractTextareaInputMeta(event: InputEvent): { value: string; cursor: number } {
   const detail = (event as unknown as { detail?: { value?: string; cursor?: number } }).detail
@@ -24,10 +21,7 @@ export function resolveSlashQuery(text: string, cursor?: number): string | null 
   return beforeCursor
 }
 
-export function useSlashCommandInput(
-  draft: Ref<string>,
-  commands: Ref<SlashCommandItem[]>,
-) {
+export function useSlashCommandInput(draft: Ref<string>, commands: Ref<SlashCommandItem[]>) {
   const slashQuery = ref<string | null>(null)
 
   function updateSlashQuery(text: string, cursor?: number) {
@@ -45,9 +39,7 @@ export function useSlashCommandInput(
 
   function applyCommand(item: SlashCommandItem): string {
     const text =
-      item.appendSpaceOnSelect && !item.command.endsWith(' ')
-        ? `${item.command} `
-        : item.command
+      item.appendSpaceOnSelect && !item.command.endsWith(' ') ? `${item.command} ` : item.command
     draft.value = text
     slashQuery.value = resolveSlashQuery(text, text.length)
     return text

@@ -1,15 +1,9 @@
 import { ref } from 'vue'
 import { runAgentBridgeCommand, runSessionBridgeCommand } from '@/api/session-api'
 import { supportsBridgeSlashCommands } from '@/bridge/constants'
-import {
-  slashCommandsFromHelpPayload,
-  type SlashCommandItem,
-} from '@/bridge/slash-command'
+import { slashCommandsFromHelpPayload, type SlashCommandItem } from '@/bridge/slash-command'
 import type { AgentBridgeType } from '@/bridge/types'
-import {
-  readSlashCommandsFromCache,
-  writeSlashCommandsToCache,
-} from '@/utils/slash-command-cache'
+import { readSlashCommandsFromCache, writeSlashCommandsToCache } from '@/utils/slash-command-cache'
 
 export interface SlashCommandsLoadParams {
   agentType: AgentBridgeType

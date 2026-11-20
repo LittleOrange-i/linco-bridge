@@ -1,10 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 
-import {
-  buildSetupCommands,
-  getAgentDisplayName,
-  requiresContextBinding,
-} from '@/bridge'
+import { buildSetupCommands, getAgentDisplayName, requiresContextBinding } from '@/bridge'
 
 import type {
   AgentBridgeBindableContext,

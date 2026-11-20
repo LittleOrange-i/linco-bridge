@@ -11,26 +11,30 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <view class="agent-item">
-    <view class="agent-item__body" @tap="emit('tap')">
-      <view class="agent-item__avatar-wrap">
-        <image class="agent-item__avatar" :src="item.avatar" mode="aspectFill" />
-        <view
+  <div class="agent-item">
+    <div class="agent-item__body" @click="emit('tap')">
+      <div class="agent-item__avatar-wrap">
+        <img class="agent-item__avatar" :src="item.avatar" />
+        <div
           class="agent-item__status-dot"
-          :class="item.status === 'online' ? 'agent-item__status-dot--online' : 'agent-item__status-dot--offline'"
+          :class="
+            item.status === 'online'
+              ? 'agent-item__status-dot--online'
+              : 'agent-item__status-dot--offline'
+          "
         />
-      </view>
-      <view class="agent-item__content">
-        <text class="agent-item__title">{{ item.title }}</text>
-        <text class="agent-item__subtitle">
+      </div>
+      <div class="agent-item__content">
+        <span class="agent-item__title">{{ item.title }}</span>
+        <span class="agent-item__subtitle">
           {{ item.deviceName || item.description }}
-          <text v-if="item.boundContextName"> · {{ item.boundContextName }}</text>
-        </text>
-      </view>
-      <text class="agent-item__badge">{{ item.status === 'online' ? '在线' : '离线' }}</text>
-    </view>
-    <view class="agent-item__divider" />
-  </view>
+          <span v-if="item.boundContextName"> · {{ item.boundContextName }}</span>
+        </span>
+      </div>
+      <span class="agent-item__badge">{{ item.status === 'online' ? '在线' : '离线' }}</span>
+    </div>
+    <div class="agent-item__divider" />
+  </div>
 </template>
 
 <style scoped lang="scss">

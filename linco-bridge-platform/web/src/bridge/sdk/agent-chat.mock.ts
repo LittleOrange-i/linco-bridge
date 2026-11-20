@@ -3,11 +3,7 @@
  * Not imported on production builds (see agent-chat-api.ts dynamic import).
  */
 import { getAgentDisplayName } from '../commands'
-import type {
-  AgentBridgeType,
-  StartConversationInput,
-  StartConversationResult,
-} from '../types'
+import type { AgentBridgeType, StartConversationInput, StartConversationResult } from '../types'
 import type { AgentChatSdk } from './agent-chat-types'
 import { getAgentAvatar } from './agent-chat'
 

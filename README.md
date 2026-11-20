@@ -57,7 +57,7 @@ Linco App, Reference Web, or custom client
 | Repository area | Purpose |
 | --- | --- |
 | `linco-bridge-connect` | Local connector for Agent CLIs, sessions, permissions, attachments, and generated files. |
-| `linco-bridge-platform` | NestJS + UniApp reference implementation for the open `linco-demo` channel. |
+| `linco-bridge-platform` | NestJS + Vue 3/Capacitor reference implementation for the open `linco-demo` channel. |
 | `docs` | Setup, architecture, protocol, security, compatibility, and extension guides. |
 
 The repository does not include the complete Linco App or the official hosted cloud-service implementation.
@@ -202,3 +202,4 @@ Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) be
 ## ⚖️ License
 
 Linco Bridge is licensed under the [MIT License](LICENSE). The license applies to repository code and documentation; it does not grant separate rights to use Linco names, logos, or other brand assets beyond normal nominative reference.
+

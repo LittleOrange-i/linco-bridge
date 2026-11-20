@@ -14,7 +14,6 @@ export function formatRelativeTime(timestamp: number, now = Date.now()): string 
   return `${month}-${dayOfMonth}`
 }
 
-/** Conversation list time — HH:mm for today, otherwise MM-DD (Flutter AppTimeFormatter). */
 export function formatConversationTime(timestamp: number, now = Date.now()): string {
   const date = new Date(timestamp)
   const nowDate = new Date(now)
@@ -34,26 +33,16 @@ export function formatConversationTime(timestamp: number, now = Date.now()): str
   return `${month}-${day}`
 }
 
-export function copyToClipboard(text: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    uni.setClipboardData({
-      data: text,
-      success: () => resolve(),
-      fail: (error) => reject(error),
-    })
-  })
+export async function copyToClipboard(text: string): Promise<void> {
+  await uni.setClipboardData({ data: text })
 }
 
-export function showToast(title: string, icon: 'success' | 'none' = 'none') {
+export function showToast(title: string, icon: 'success' | 'none' = 'none'): void {
   uni.showToast({ title, icon, duration: 2000 })
 }
 
-const BRIDGE_PLACEHOLDER_PREVIEWS = new Set([
-  'ready when you are.',
-  'ready when you are',
-])
+const BRIDGE_PLACEHOLDER_PREVIEWS = new Set(['ready when you are.', 'ready when you are'])
 
-/** Session list preview — single line, markdown stripped (aligned with Flutter preview). */
 export function formatSessionPreview(content: string): string {
   let text = content.trim()
   if (!text) return ''

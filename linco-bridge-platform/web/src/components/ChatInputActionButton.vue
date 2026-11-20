@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CHAT_ICON, CHAT_INPUT_ICON_SIZE_RPX, CHAT_INPUT_SEND_SIZE_RPX } from '@/constants/chat-icons'
+import {
+  CHAT_ICON,
+  CHAT_INPUT_ICON_SIZE_RPX,
+  CHAT_INPUT_SEND_SIZE_RPX,
+} from '@/constants/chat-icons'
 
 const props = withDefaults(
   defineProps<{
@@ -25,9 +29,7 @@ const emit = defineEmits<{
 
 const canSubmit = computed(() => props.canSend && !props.isSendDisabled && !props.isSending)
 
-const sendIconSrc = computed(() =>
-  props.isSendDisabled ? CHAT_ICON.sendDisabled : CHAT_ICON.send,
-)
+const sendIconSrc = computed(() => (props.isSendDisabled ? CHAT_ICON.sendDisabled : CHAT_ICON.send))
 
 function handleTap() {
   if (props.isSending) {
@@ -44,7 +46,7 @@ function handleTap() {
 </script>
 
 <template>
-  <view
+  <div
     class="chat-action-btn"
     :class="{
       'chat-action-btn--stop': isSending,
@@ -54,16 +56,11 @@ function handleTap() {
       width: `${CHAT_INPUT_SEND_SIZE_RPX}rpx`,
       height: `${CHAT_INPUT_SEND_SIZE_RPX}rpx`,
     }"
-    @tap="handleTap"
+    @click="handleTap"
   >
-    <text v-if="isSending" class="chat-action-btn__stop">■</text>
-    <image
-      v-else-if="canSend"
-      class="chat-action-btn__send"
-      :src="sendIconSrc"
-      mode="aspectFit"
-    />
-    <image
+    <span v-if="isSending" class="chat-action-btn__stop">■</span>
+    <img v-else-if="canSend" class="chat-action-btn__send" :src="sendIconSrc" />
+    <img
       v-else
       class="chat-action-btn__voice"
       :style="{
@@ -71,9 +68,8 @@ function handleTap() {
         height: `${voiceIconSizeRpx}rpx`,
       }"
       :src="CHAT_ICON.voice"
-      mode="aspectFit"
     />
-  </view>
+  </div>
 </template>
 
 <style scoped lang="scss">

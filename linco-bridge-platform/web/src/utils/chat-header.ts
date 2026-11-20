@@ -1,9 +1,6 @@
 import { getAgentDisplayName } from '@/bridge/commands'
 import { requiresContextBinding } from '@/bridge/constants'
-import {
-  getAgentAvatar,
-  parseAgentTypeFromSessionId,
-} from '@/bridge/sdk/agent-chat'
+import { getAgentAvatar, parseAgentTypeFromSessionId } from '@/bridge/sdk/agent-chat'
 import type { AgentBridgeType, AgentLandingHeader, ChatSessionItem } from '@/bridge/types'
 
 export interface ChatHeaderView {
@@ -88,21 +85,14 @@ export function resolveChatHeader(
   const online = session?.online ?? bridgeOnline ?? false
   const resolvedDeviceName = deviceName?.trim() || session?.deviceName?.trim() || ''
   const rawTitle =
-    session?.conversationTitle?.trim() ||
-    session?.title?.trim() ||
-    getAgentDisplayName(agentType)
+    session?.conversationTitle?.trim() || session?.title?.trim() || getAgentDisplayName(agentType)
   const title = resolvedDeviceName
     ? stripDeviceSuffixFromTitle(rawTitle, resolvedDeviceName)
     : rawTitle
 
   return {
     title,
-    subtitle: buildBridgeHeaderSubtitle(
-      agentType,
-      online,
-      resolvedDeviceName,
-      boundContextName,
-    ),
+    subtitle: buildBridgeHeaderSubtitle(agentType, online, resolvedDeviceName, boundContextName),
     avatar: getAgentAvatar(agentType),
     agentType,
   }

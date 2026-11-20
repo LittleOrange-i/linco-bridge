@@ -9,7 +9,9 @@ export function bridgePathBasename(path: string): string {
   return segments[segments.length - 1]?.trim() ?? ''
 }
 
-export function resolveBridgeProjectLabel(session: ChatSessionItem | undefined): string | undefined {
+export function resolveBridgeProjectLabel(
+  session: ChatSessionItem | undefined,
+): string | undefined {
   if (!session || !BRIDGE_PROJECT_AGENT_TYPES.has(session.agentType)) {
     return undefined
   }

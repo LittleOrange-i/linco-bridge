@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { onLoad, onShow, onUnload } from '@dcloudio/uni-app'
+import { onLoad, onShow, onUnload } from '@/composables/uni-lifecycle'
 import { computed, ref } from 'vue'
 import AgentHistoryRow from '@/components/AgentHistoryRow.vue'
 import AgentLandingAppBar from '@/components/AgentLandingAppBar.vue'
-import AppOverlayHost from '@/components/AppOverlayHost.vue'
 import AgentLandingInput from '@/components/AgentLandingInput.vue'
 import { useAgentLanding } from '@/composables/useAgentLanding'
 import { useAttachmentPicker } from '@/composables/useAttachmentPicker'
@@ -184,7 +183,7 @@ async function handleSend() {
 </script>
 
 <template>
-  <view class="page-container landing-page">
+  <div class="page-container landing-page">
     <AgentLandingAppBar
       v-if="header"
       :title="header.title"
@@ -196,35 +195,35 @@ async function handleSend() {
       @more="handleMore"
     />
 
-    <scroll-view class="landing-page__body" scroll-y :show-scrollbar="false">
-      <view
+    <div class="uni-scroll-view landing-page__body">
+      <div
         class="landing-page__body-inner"
         :class="{ 'landing-page__body-inner--center': loading || visibleItems.length === 0 }"
       >
-        <view v-if="loading" class="landing-page__loading">
-          <text class="landing-page__loading-text">加载中…</text>
-        </view>
+        <div v-if="loading" class="landing-page__loading">
+          <span class="landing-page__loading-text">加载中…</span>
+        </div>
 
-        <view v-else-if="visibleItems.length === 0" class="landing-page__empty">
-          <text class="landing-page__empty-text">暂无历史会话</text>
-        </view>
+        <div v-else-if="visibleItems.length === 0" class="landing-page__empty">
+          <span class="landing-page__empty-text">暂无历史会话</span>
+        </div>
 
-        <view v-else class="landing-page__history">
+        <div v-else class="landing-page__history">
           <!-- 间距放在外层 view：小程序自定义组件不吃父级 class 的 margin -->
-          <view
+          <div
             v-for="(item, index) in visibleItems"
             :key="item.id"
             class="landing-page__history-item"
             :class="{ 'landing-page__history-item--gap': index < visibleItems.length - 1 }"
           >
-            <AgentHistoryRow :item="item" @tap="openHistoryItem(item)" />
-          </view>
-          <view v-if="hasMore" class="landing-page__view-all" @tap="viewAllHistory">
-            <text class="landing-page__view-all-text">查看历史对话</text>
-          </view>
-        </view>
-      </view>
-    </scroll-view>
+            <AgentHistoryRow :item="item" @click="openHistoryItem(item)" />
+          </div>
+          <div v-if="hasMore" class="landing-page__view-all" @click="viewAllHistory">
+            <span class="landing-page__view-all-text">查看历史对话</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <AgentLandingInput
       v-model="draft"
@@ -240,10 +239,7 @@ async function handleSend() {
       @remove-file="removeFile"
       @pick-settings="handlePickSettings"
     />
-    <!-- #ifndef H5 -->
-    <AppOverlayHost />
-    <!-- #endif -->
-  </view>
+  </div>
 </template>
 
 <style scoped lang="scss">

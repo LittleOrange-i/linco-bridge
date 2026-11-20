@@ -20,7 +20,7 @@ The hosted demo is a public evaluation environment without a formal account syst
 ```text
 linco-bridge-platform/
   server/              # NestJS backend (SQLite + embedded bridge WS)
-  web/                 # UniApp frontend (H5 + mini program)
+  web/                 # Vue 3 + Capacitor frontend \(Web \+ Android\)
   docker-compose.yml
 ```
 
@@ -159,3 +159,5 @@ docker compose up --build
 - Codex and Claude support workspace selection plus model and reasoning settings.
 - Hermes and OpenClaw bind one demo credential to one Profile or Agent during import, and do not support in-chat switching.
 - If bridge capabilities change, update both [`web/README.md`](web/README.md) and [`server/README.md`](server/README.md) together.
+
+

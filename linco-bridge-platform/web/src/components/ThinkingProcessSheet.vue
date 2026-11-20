@@ -42,10 +42,12 @@ function followLatestAction() {
   })
 }
 
-function handleScroll(event: { detail: { scrollTop?: number } }) {
-  const scrollTop = Number(event.detail.scrollTop)
+function handleScroll(event: Event) {
+  const el = event.target as HTMLElement | null
+  const scrollTop = Number(el?.scrollTop)
   if (!Number.isFinite(scrollTop)) return
-  following.value = updateChatFollowState(following.value, { scrollTop })
+  const reachedBottom = Boolean(el && el.scrollTop + el.clientHeight >= el.scrollHeight - 80)
+  following.value = updateChatFollowState(following.value, { scrollTop, reachedBottom })
 }
 
 function handleScrollToLower() {
@@ -66,51 +68,49 @@ watch(actionStateKey, followLatestAction)
 </script>
 
 <template>
-  <view v-if="visible" class="thinking-sheet" @touchmove.stop.prevent>
-    <view class="thinking-sheet__mask" @tap="emit('close')" />
-    <view class="thinking-sheet__panel">
-      <view class="thinking-sheet__handle-wrap">
-        <view class="thinking-sheet__handle" />
-      </view>
+  <div v-if="visible" class="thinking-sheet" @touchmove.stop.prevent>
+    <div class="thinking-sheet__mask" @click="emit('close')" />
+    <div class="thinking-sheet__panel">
+      <div class="thinking-sheet__handle-wrap">
+        <div class="thinking-sheet__handle" />
+      </div>
 
-      <view class="thinking-sheet__header">
-        <view class="thinking-sheet__header-side" />
-        <view class="thinking-sheet__title-wrap">
-          <text class="thinking-sheet__title">思考过程</text>
-          <text v-if="hasTrace" class="thinking-sheet__subtitle">{{ summary }}</text>
-        </view>
-        <view class="thinking-sheet__close-btn" @tap="emit('close')">
-          <text class="thinking-sheet__close-icon">×</text>
-        </view>
-      </view>
+      <div class="thinking-sheet__header">
+        <div class="thinking-sheet__header-side" />
+        <div class="thinking-sheet__title-wrap">
+          <span class="thinking-sheet__title">思考过程</span>
+          <span v-if="hasTrace" class="thinking-sheet__subtitle">{{ summary }}</span>
+        </div>
+        <div class="thinking-sheet__close-btn" @click="emit('close')">
+          <span class="thinking-sheet__close-icon">×</span>
+        </div>
+      </div>
 
-      <view class="thinking-sheet__divider" />
+      <div class="thinking-sheet__divider" />
 
-      <scroll-view
-        class="thinking-sheet__body"
-        scroll-y
-        :show-scrollbar="false"
-        :scroll-into-view="scrollAnchor"
+      <div
+        class="uni-scroll-view thinking-sheet__body"
+        :data-scroll-anchor="scrollAnchor"
         :lower-threshold="80"
         @scroll="handleScroll"
         @scrolltolower="handleScrollToLower"
       >
-        <view v-if="hasTrace" class="thinking-sheet__trace">
-          <view
+        <div v-if="hasTrace" class="thinking-sheet__trace">
+          <div
             v-for="(action, index) in trace!.actions"
             :id="`thinking-action-${index}`"
             :key="action.id"
           >
             <AgentTraceActionCard :action="action" />
-          </view>
-        </view>
+          </div>
+        </div>
 
-        <view v-if="!hasTrace" class="thinking-sheet__empty-wrap">
-          <text class="thinking-sheet__empty">暂无思考内容</text>
-        </view>
-      </scroll-view>
-    </view>
-  </view>
+        <div v-if="!hasTrace" class="thinking-sheet__empty-wrap">
+          <span class="thinking-sheet__empty">暂无思考内容</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

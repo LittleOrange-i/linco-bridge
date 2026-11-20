@@ -39,9 +39,7 @@ export function isHtmlFence(language: string, code: string): boolean {
   if (normalized !== 'plaintext') return false
   const trimmed = code.trimStart().toLowerCase()
   return (
-    trimmed.startsWith('<!doctype html') ||
-    trimmed.startsWith('<html') ||
-    trimmed.includes('<body')
+    trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html') || trimmed.includes('<body')
   )
 }
 

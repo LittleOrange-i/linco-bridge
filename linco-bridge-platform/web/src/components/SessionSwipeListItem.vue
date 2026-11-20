@@ -42,7 +42,7 @@ defineExpose({
     @open="emit('open')"
     @close="emit('close')"
     @action="handleDelete"
-    @tap="handleTap"
+    @click="handleTap"
   >
     <SessionListItem :item="item" @select="handleTap" />
   </SwipeActionItem>

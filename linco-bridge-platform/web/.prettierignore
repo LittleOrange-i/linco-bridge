@@ -1,0 +1,10 @@
+dist/
+node_modules/
+unpackage/
+android/
+src/manifest.json
+src/pages.json
+src/uni.scss
+project.config.json
+project.private.config.json
+package-lock.json

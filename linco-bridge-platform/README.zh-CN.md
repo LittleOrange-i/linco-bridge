@@ -2,25 +2,25 @@
 
 [English](README.md)
 
-Linco Bridge 自托管参考平台，用于联调本机 Agent CLI 与 H5 / 小程序前端，验证完整桥接链路。当前参考 Agent 包括 Codex、Claude Code、Hermes、OpenClaw。
+Linco Bridge 自托管参考平台，用于联调本机 Agent CLI 与 Web / Android 前端，验证完整桥接链路。当前参考 Agent 包括 Codex、Claude Code、Hermes、OpenClaw。
 
 ## 两种体验方式
 
 | 方式 | 说明 |
 | --- | --- |
 | **本地全栈 Demo** | Clone 本仓库，本地启动 `server` + `web`，适合开发者与二次开发 |
-| **在线 Demo** | 使用官方部署的 H5 / 小程序 + 本机 `linco-connect`：[https://bridge-demo.lincotalk.com](https://bridge-demo.lincotalk.com)，详见 [`../docs/zh-CN/deploy-demo.md`](../docs/zh-CN/deploy-demo.md) |
+| **在线 Demo** | 使用官方部署的 Web Demo + 本机 `linco-connect`：[https://bridge-demo.lincotalk.com](https://bridge-demo.lincotalk.com)，详见 [`../docs/zh-CN/deploy-demo.md`](../docs/zh-CN/deploy-demo.md) |
 
 在线 Demo 是不提供正式账号体系的公共体验环境。当前实现通过签名匿名访客 Session 隔离不同访客的桥接连接、会话和消息，并使用当前客户端的本地存储保留访客 Session；清理存储、更换设备或使用无痕模式后，之前的 Demo 状态可能无法继续访问。这不等同于生产级多租户安全或账号恢复机制，请勿提交敏感信息或正式业务数据。
 
-**第三方前端：** fork 或修改 `web` 后请自托管 Server；**不得**将 API 指向官方 `bridge-demo.lincotalk.com`（官方 Server 仅放行官方 H5 / 小程序域名，见 `CORS_ORIGINS`）。
+**第三方前端：** fork 或修改 `web` 后请自托管 Server；**不得**将 API 指向官方 `bridge-demo.lincotalk.com`（官方 Server 仅放行官方 Demo 域名，见 `CORS_ORIGINS`）。
 
 ## 目录结构
 
 ```text
 linco-bridge-platform/
   server/              # NestJS 后端（SQLite + 内嵌 bridge WS）
-  web/                 # UniApp 前端（H5 + 小程序）
+  web/                 # Vue 3 + Capacitor 前端（Web + Android）
   docker-compose.yml
 ```
 
@@ -159,3 +159,5 @@ docker compose up --build
 - Codex 和 Claude 支持工作区选择，以及模型、推理强度设置
 - Hermes 和 OpenClaw 在导入时一条 demo 凭证仅绑定一个 Profile 或 Agent，不支持聊天中切换
 - 如果桥接能力发生变化，请同步更新 [`web/README.zh-CN.md`](web/README.zh-CN.md) 与 [`server/README.zh-CN.md`](server/README.zh-CN.md)
+
+

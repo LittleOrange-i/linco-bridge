@@ -5,10 +5,10 @@ defineProps<{
 </script>
 
 <template>
-  <view class="streaming-indicator">
-    <view class="streaming-indicator__spinner" />
-    <text v-if="label" class="streaming-indicator__label">{{ label }}</text>
-  </view>
+  <div class="streaming-indicator">
+    <div class="streaming-indicator__spinner" />
+    <span v-if="label" class="streaming-indicator__label">{{ label }}</span>
+  </div>
 </template>
 
 <style scoped lang="scss">

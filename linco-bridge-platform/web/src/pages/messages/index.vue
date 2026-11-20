@@ -1,6 +1,6 @@
 <script setup lang="ts">
-
-import { onShow } from '@dcloudio/uni-app'
+import AppTabBar from '@/components/AppTabBar.vue'
+import { onShow } from '@/composables/uni-lifecycle'
 
 import { ref } from 'vue'
 
@@ -24,8 +24,6 @@ import { isH5Runtime } from '@/utils/platform-runtime'
 const pageSafeStyle = getCustomNavPagePaddingStyle()
 const useSimpleListOnH5 = isH5Runtime()
 
-
-
 const sessionStore = useSessionStore()
 
 const refreshing = ref(false)
@@ -35,51 +33,31 @@ const openedSwipeId = ref<string | null>(null)
 const deletingId = ref<string | null>(null)
 let lastItemTapAt = 0
 
-
-
 onShow(() => {
-
   void sessionStore.loadSessions()
-
 })
 
-
-
 async function handleRefresh() {
-
   refreshing.value = true
 
   try {
-
     await sessionStore.loadSessions()
-
   } catch (err) {
-
     showToast(err instanceof Error ? err.message : '刷新失败')
-
   } finally {
-
     refreshing.value = false
-
   }
-
 }
-
-
 
 function openSession(item: ChatSessionItem) {
   openSessionLanding(item)
 }
-
-
 
 function handleScrollBackgroundTap() {
   if (!useSimpleListOnH5 && openedSwipeId.value) {
     openedSwipeId.value = null
   }
 }
-
-
 
 function handleItemTap(item: ChatSessionItem) {
   const now = Date.now()
@@ -96,38 +74,22 @@ function handleItemTap(item: ChatSessionItem) {
   openSession(item)
 }
 
-
-
 function handleSwipeOpen(sessionId: string) {
-
   openedSwipeId.value = sessionId
-
 }
-
-
 
 function handleSwipeClose(sessionId: string) {
-
   if (openedSwipeId.value === sessionId) {
-
     openedSwipeId.value = null
-
   }
-
 }
 
-
-
 function confirmDeleteSession(item: ChatSessionItem) {
-
   if (deletingId.value) {
-
     return
-
   }
 
   uni.showModal({
-
     title: '删除会话',
 
     content: '将永久删除该连接下的会话与消息记录，无法恢复。本机 Agent 与连接器配置不受影响。',
@@ -137,24 +99,14 @@ function confirmDeleteSession(item: ChatSessionItem) {
     confirmColor: '#ff4d4f',
 
     success: (res) => {
-
       if (res.confirm) {
-
         void deleteSession(item)
-
       } else {
-
         openedSwipeId.value = null
-
       }
-
     },
-
   })
-
 }
-
-
 
 async function deleteSession(item: ChatSessionItem) {
   deletingId.value = item.id
@@ -177,59 +129,31 @@ async function deleteSession(item: ChatSessionItem) {
   }
 }
 
-
-
 function goBridge() {
-
   switchRootTab('bridge')
-
 }
-
 </script>
 
-
-
 <template>
-
-  <view class="page-container messages-page" :style="pageSafeStyle">
-
-    <scroll-view
-
-      class="messages-page__scroll"
-
-      scroll-y
-
-      refresher-enabled
-
-      :refresher-triggered="refreshing"
-
+  <div class="page-container with-tabbar messages-page" :style="pageSafeStyle">
+    <div
+      class="uni-scroll-view messages-page__scroll"
       @refresherrefresh="handleRefresh"
-
-      @tap="handleScrollBackgroundTap"
-
+      @click="handleScrollBackgroundTap"
     >
+      <div v-if="sessionStore.loadingSessions && sessionStore.sessions.length === 0" class="empty">
+        <span class="empty__desc">加载中…</span>
+      </div>
 
-      <view v-if="sessionStore.loadingSessions && sessionStore.sessions.length === 0" class="empty">
+      <div v-else-if="sessionStore.sessions.length === 0" class="empty">
+        <span class="empty__title">暂无桥接会话</span>
 
-        <text class="empty__desc">加载中…</text>
+        <span class="empty__desc">前往「桥接」连接本机 Agent</span>
 
-      </view>
+        <div class="empty__action" @click="goBridge">去桥接</div>
+      </div>
 
-
-
-      <view v-else-if="sessionStore.sessions.length === 0" class="empty">
-
-        <text class="empty__title">暂无桥接会话</text>
-
-        <text class="empty__desc">前往「桥接」连接本机 Agent</text>
-
-        <view class="empty__action" @tap="goBridge">去桥接</view>
-
-      </view>
-
-
-
-      <view v-else class="messages-page__list">
+      <div v-else class="messages-page__list">
         <template v-if="useSimpleListOnH5">
           <SessionListItem
             v-for="item in sessionStore.sessions"
@@ -246,24 +170,18 @@ function goBridge() {
             :open="openedSwipeId === item.id"
             @open="handleSwipeOpen(item.id)"
             @close="handleSwipeClose(item.id)"
-            @tap="handleItemTap(item)"
+            @click="handleItemTap(item)"
             @delete="confirmDeleteSession(item)"
           />
         </template>
-      </view>
-
-    </scroll-view>
-
-  </view>
-
+      </div>
+    </div>
+    <AppTabBar />
+  </div>
 </template>
 
-
-
 <style scoped lang="scss">
-
 .messages-page {
-
   display: flex;
 
   flex-direction: column;
@@ -271,33 +189,21 @@ function goBridge() {
   height: 100vh;
 
   background: #ffffff;
-
 }
 
-
-
 .messages-page__scroll {
-
   flex: 1;
 
   min-height: 0;
-
 }
 
-
-
 .messages-page__list {
-
   margin-top: 8rpx;
 
   background: #ffffff;
-
 }
 
-
-
 .empty {
-
   display: flex;
 
   flex-direction: column;
@@ -305,37 +211,25 @@ function goBridge() {
   align-items: center;
 
   padding: 160rpx 48rpx 0;
-
 }
 
-
-
 .empty__title {
-
   font-size: 34rpx;
 
   font-weight: 600;
 
   color: #1a1a1a;
-
 }
 
-
-
 .empty__desc {
-
   margin-top: 16rpx;
 
   font-size: 28rpx;
 
   color: #8c8c8c;
-
 }
 
-
-
 .empty__action {
-
   margin-top: 40rpx;
 
   padding: 18rpx 48rpx;
@@ -347,8 +241,5 @@ function goBridge() {
   color: #ffffff;
 
   font-size: 28rpx;
-
 }
-
 </style>
-

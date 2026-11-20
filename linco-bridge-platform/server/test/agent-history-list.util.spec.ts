@@ -9,6 +9,7 @@ import {
 function row(partial: Partial<ChatSessionRow> & Pick<ChatSessionRow, 'id'>): ChatSessionRow {
   return {
     id: partial.id,
+    owner_id: 'visitor-1',
     agent_type: partial.agent_type ?? 'codex',
     title: partial.title ?? 'Codex',
     bridge_connection_id: partial.bridge_connection_id ?? 'conn-1',
@@ -18,6 +19,7 @@ function row(partial: Partial<ChatSessionRow> & Pick<ChatSessionRow, 'id'>): Cha
     last_message: partial.last_message ?? '',
     update_time: partial.update_time ?? 1,
     is_temp_session: partial.is_temp_session ?? 0,
+    bridge_settings_json: null,
   }
 }
 
@@ -74,3 +76,4 @@ describe('agent-history-list.util', () => {
     expect(deduped[0]?.id).toBe('b')
   })
 })
+

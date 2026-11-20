@@ -74,9 +74,7 @@ describe('buildBridgeSettingsToolbarLabel', () => {
 
 describe('resolveInitialReasoningId', () => {
   it('prefers pending settings over connector defaults', () => {
-    expect(
-      resolveInitialReasoningId(demoOptions, { reasoningEffort: 'high' }),
-    ).toBe('high')
+    expect(resolveInitialReasoningId(demoOptions, { reasoningEffort: 'high' })).toBe('high')
   })
 
   it('falls back to current and default ids', () => {

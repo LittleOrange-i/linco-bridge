@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppTabBar from '@/components/AppTabBar.vue'
 import BridgeSourceCard from '@/components/BridgeSourceCard.vue'
 import { BRIDGE_SOURCE_CARDS } from '@/bridge/constants'
 import type { BridgeSourceCard as BridgeSourceCardType } from '@/bridge/types'
@@ -13,16 +14,17 @@ function handleSelect(item: BridgeSourceCardType) {
 </script>
 
 <template>
-  <view class="page-container bridge-page" :style="pageSafeStyle">
-    <view class="bridge-page__list">
+  <div class="page-container with-tabbar bridge-page" :style="pageSafeStyle">
+    <div class="bridge-page__list">
       <BridgeSourceCard
         v-for="item in BRIDGE_SOURCE_CARDS"
         :key="item.type"
         :item="item"
         @select="handleSelect"
       />
-    </view>
-  </view>
+    </div>
+    <AppTabBar />
+  </div>
 </template>
 
 <style scoped lang="scss">

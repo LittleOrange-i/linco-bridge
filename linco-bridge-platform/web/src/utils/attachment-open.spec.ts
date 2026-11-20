@@ -23,7 +23,9 @@ describe('attachment-open', () => {
 
   it('rejects workspace directory links', () => {
     expect(
-      isOpenableFileLinkTarget('C:\\Users\\demo\\AppData\\Local\\linco-bridge\\sessions\\sid_abc\\workspace'),
+      isOpenableFileLinkTarget(
+        'C:\\Users\\demo\\AppData\\Local\\linco-bridge\\sessions\\sid_abc\\workspace',
+      ),
     ).toBe(false)
     expect(isOpenableFileLinkTarget('卤肉饭制作过程.txt')).toBe(true)
     expect(isOpenableFileLinkTarget('D:\\tmp\\report.pdf')).toBe(true)
@@ -37,7 +39,11 @@ describe('attachment-open', () => {
   })
 
   it('retries when connector rejects stale absolute paths', () => {
-    expect(shouldRetryBridgeFileGet('拒绝读取该路径：只能获取当前工作目录、运行目录或附件目录内的文件。')).toBe(true)
+    expect(
+      shouldRetryBridgeFileGet(
+        '拒绝读取该路径：只能获取当前工作目录、运行目录或附件目录内的文件。',
+      ),
+    ).toBe(true)
     expect(shouldRetryBridgeFileGet('文件不存在：missing.txt')).toBe(true)
     expect(shouldRetryBridgeFileGet('不是普通文件')).toBe(false)
   })

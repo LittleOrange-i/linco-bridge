@@ -124,22 +124,22 @@ defineExpose({ close })
 </script>
 
 <template>
-  <view class="swipe-item">
-    <view class="swipe-item__action" @tap.stop="onActionTap">
-      <text class="swipe-item__action-text">{{ actionText }}</text>
-    </view>
-    <view
+  <div class="swipe-item">
+    <div class="swipe-item__action" @click.stop="onActionTap">
+      <span class="swipe-item__action-text">{{ actionText }}</span>
+    </div>
+    <div
       class="swipe-item__content"
       :style="contentStyle"
       @touchstart.stop="onTouchStart"
       @touchmove.stop="onTouchMove"
       @touchend.stop="onTouchEnd"
       @touchcancel.stop="onTouchEnd"
-      @tap.stop="onContentTap"
+      @click.stop="onContentTap"
     >
       <slot />
-    </view>
-  </view>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

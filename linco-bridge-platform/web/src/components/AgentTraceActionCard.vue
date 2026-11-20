@@ -35,35 +35,44 @@ const statusClass = computed(() => {
 </script>
 
 <template>
-  <view class="trace-action" :class="statusClass">
-    <view class="trace-action__head">
-      <view class="trace-action__status-dot" />
-      <view class="trace-action__main">
-        <view class="trace-action__title-row">
-          <text class="trace-action__title">{{ title }}</text>
-          <text
-            v-if="canExpand"
-            class="trace-action__toggle"
-            @tap.stop="expanded = !expanded"
-          >
+  <div class="trace-action" :class="statusClass">
+    <div class="trace-action__head">
+      <div class="trace-action__status-dot" />
+      <div class="trace-action__main">
+        <div class="trace-action__title-row">
+          <span class="trace-action__title">{{ title }}</span>
+          <span v-if="canExpand" class="trace-action__toggle" @click.stop="expanded = !expanded">
             {{ expanded ? '收起' : '展开' }}
-          </text>
-        </view>
-        <text v-if="preview && !expanded" class="trace-action__preview">{{ preview }}</text>
-        <view v-if="expanded && action.detail_kind === 'markdown' && action.detail" class="trace-action__markdown">
+          </span>
+        </div>
+        <span v-if="preview && !expanded" class="trace-action__preview">{{ preview }}</span>
+        <div
+          v-if="expanded && action.detail_kind === 'markdown' && action.detail"
+          class="trace-action__markdown"
+        >
           <MessageMarkdown :content="action.detail" variant="assistant" />
-        </view>
-        <text v-else-if="expanded && hiddenDetail" class="trace-action__detail">{{ hiddenDetail }}</text>
-        <view v-if="todos.length" class="trace-action__todos">
-          <view v-for="(todo, index) in todos" :key="`${action.id}-todo-${index}`" class="trace-action__todo">
-            <text class="trace-action__todo-icon">{{ todo.status === 'completed' || todo.status === 'success' ? '✓' : '○' }}</text>
-            <text class="trace-action__todo-text">{{ todo.text }}</text>
-          </view>
-        </view>
-        <text v-if="action.error_message" class="trace-action__error">{{ action.error_message }}</text>
-      </view>
-    </view>
-  </view>
+        </div>
+        <span v-else-if="expanded && hiddenDetail" class="trace-action__detail">{{
+          hiddenDetail
+        }}</span>
+        <div v-if="todos.length" class="trace-action__todos">
+          <div
+            v-for="(todo, index) in todos"
+            :key="`${action.id}-todo-${index}`"
+            class="trace-action__todo"
+          >
+            <span class="trace-action__todo-icon">{{
+              todo.status === 'completed' || todo.status === 'success' ? '✓' : '○'
+            }}</span>
+            <span class="trace-action__todo-text">{{ todo.text }}</span>
+          </div>
+        </div>
+        <span v-if="action.error_message" class="trace-action__error">{{
+          action.error_message
+        }}</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

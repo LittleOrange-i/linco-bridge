@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import {
-  slashCommandDisplayCommand,
-  type SlashCommandItem,
-} from '@/bridge/slash-command'
+import { slashCommandDisplayCommand, type SlashCommandItem } from '@/bridge/slash-command'
 
 const props = defineProps<{
   commands: SlashCommandItem[]
@@ -22,23 +19,17 @@ function handleSelect(item: SlashCommandItem) {
 </script>
 
 <template>
-  <scroll-view
-    v-if="commands.length > 0"
-    class="slash-panel"
-    scroll-y
-    :show-scrollbar="commands.length > 8"
-    :style="{ maxHeight }"
-  >
-    <view
+  <div v-if="commands.length > 0" class="uni-scroll-view slash-panel" :style="{ maxHeight }">
+    <div
       v-for="item in commands"
       :key="item.command"
       class="slash-panel__row"
-      @tap="handleSelect(item)"
+      @click="handleSelect(item)"
     >
-      <text class="slash-panel__command">{{ slashCommandDisplayCommand(item) }}</text>
-      <text class="slash-panel__description">{{ item.description }}</text>
-    </view>
-  </scroll-view>
+      <span class="slash-panel__command">{{ slashCommandDisplayCommand(item) }}</span>
+      <span class="slash-panel__description">{{ item.description }}</span>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

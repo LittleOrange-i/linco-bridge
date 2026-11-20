@@ -171,7 +171,7 @@ async function streamSessionMessageViaFetch(
   return finalMessage
 }
 
-type ChunkCapableRequestTask = UniApp.RequestTask & {
+type ChunkCapableRequestTask = {
   onChunkReceived?: (listener: (res: { data: ArrayBuffer }) => void) => void
   offChunkReceived?: (listener: (res: { data: ArrayBuffer }) => void) => void
   abort?: () => void
@@ -300,7 +300,7 @@ async function streamSessionMessageViaUniRequest(
       finish(new Error('Aborted'))
     })
 
-    task.onChunkReceived?.((res) => {
+    task.onChunkReceived?.((res: { data: ArrayBuffer }) => {
       onChunk(res.data)
     })
   })

@@ -150,7 +150,11 @@ export class CodexHostDirectiveStreamFilter {
       return
     }
     const trailing = (match[2] ?? '').trim()
-    if (markerChar === this.fenceChar && marker.length >= this.fenceLength && trailing.length === 0) {
+    if (
+      markerChar === this.fenceChar &&
+      marker.length >= this.fenceLength &&
+      trailing.length === 0
+    ) {
       this.inFence = false
       this.fenceChar = ''
       this.fenceLength = 0

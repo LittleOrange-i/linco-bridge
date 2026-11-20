@@ -18,19 +18,19 @@ function previewText(): string {
 </script>
 
 <template>
-  <view class="history-row">
-    <view class="history-row__head">
-      <view v-if="item.unread" class="history-row__dot" />
-      <text v-if="item.pinned" class="history-row__pin">📌</text>
-      <text class="history-row__title text-ellipsis">{{ item.title }}</text>
-      <text class="history-row__time">{{ formatConversationTime(item.updatedAt) }}</text>
-    </view>
-    <view class="history-row__preview-line">
-      <text class="history-row__preview" :class="{ 'history-row__preview--working': item.working }">
+  <div class="history-row">
+    <div class="history-row__head">
+      <div v-if="item.unread" class="history-row__dot" />
+      <span v-if="item.pinned" class="history-row__pin">📌</span>
+      <span class="history-row__title text-ellipsis">{{ item.title }}</span>
+      <span class="history-row__time">{{ formatConversationTime(item.updatedAt) }}</span>
+    </div>
+    <div class="history-row__preview-line">
+      <span class="history-row__preview" :class="{ 'history-row__preview--working': item.working }">
         {{ previewText() }}
-      </text>
-    </view>
-  </view>
+      </span>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

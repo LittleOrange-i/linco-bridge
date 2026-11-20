@@ -264,7 +264,9 @@ export function createMockBridgeSdk(options?: {
   const mockContexts: Record<AgentBridgeType, AgentBridgeBindableContext[]> = {
     codex: [{ id: 'project-1', label: 'demo-project', description: 'Codex workspace' }],
     claude: [{ id: 'project-1', label: 'demo-project', description: 'Claude project' }],
-    deepseek: [{ id: 'project-1', label: 'demo-project', description: 'DeepSeek Harness workspace' }],
+    deepseek: [
+      { id: 'project-1', label: 'demo-project', description: 'DeepSeek Harness workspace' },
+    ],
     hermes: [{ id: 'profile-default', label: 'default', description: 'Hermes profile' }],
     openclaw: [{ id: 'agent-main', label: 'main', description: 'OpenClaw agent' }],
   }
@@ -421,9 +423,7 @@ export function createMockBridgeSdk(options?: {
         const payload = (body ?? {}) as { contextId?: string }
         const contextId = payload.contextId ?? mockContexts[type]?.[0]?.id ?? 'default'
         const context = mockContexts[type]?.find((item) => item.id === contextId)
-        return ok(
-          buildBindResult(type, contextId, context?.label ?? contextId),
-        ) as ApiResponse<T>
+        return ok(buildBindResult(type, contextId, context?.label ?? contextId)) as ApiResponse<T>
       }
 
       const selectProjectMatch = path.match(/^\/api\/agent-bridges\/(\w+)\/select-project$/)
@@ -453,7 +453,8 @@ export function createMockBridgeSdk(options?: {
       if (applyMatch) {
         const type = applyMatch[1] as AgentBridgeType
         const payload = (body ?? {}) as BridgeWorkspaceApplyInput
-        const sessionId = payload.platformSessionId ?? sessionByType.get(type) ?? `mock-session-${type}`
+        const sessionId =
+          payload.platformSessionId ?? sessionByType.get(type) ?? `mock-session-${type}`
         return ok({
           sessionId,
           title: payload.sessionTitle ?? payload.projectName ?? 'demo',
@@ -554,9 +555,6 @@ export function createMockBridgeSdk(options?: {
 }
 
 export { getAgentDisplayName }
-export {
-  getAgentAvatar,
-  parseAgentTypeFromSessionId,
-} from './agent-chat'
+export { getAgentAvatar, parseAgentTypeFromSessionId } from './agent-chat'
 export { buildLandingSubtitle } from '@/utils/chat-header'
 export type { AgentChatSdk } from './agent-chat-types'

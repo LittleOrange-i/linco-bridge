@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  actionPreview,
-  actionTitle,
-  planTodosForAction,
-} from '@/utils/agent-trace-view'
+import { actionPreview, actionTitle, planTodosForAction } from '@/utils/agent-trace-view'
 import type { AgentTraceAction } from '@/bridge/types'
 
 describe('agent-trace-view', () => {

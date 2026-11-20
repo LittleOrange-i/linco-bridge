@@ -26,7 +26,9 @@ describe('formatConversationTime', () => {
   })
 
   it('returns MM-DD for previous days', () => {
-    expect(formatConversationTime(new Date('2026-07-01T08:00:00.000Z').getTime(), now)).toBe('07-01')
+    expect(formatConversationTime(new Date('2026-07-01T08:00:00.000Z').getTime(), now)).toBe(
+      '07-01',
+    )
   })
 })
 

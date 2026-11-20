@@ -65,6 +65,7 @@ describe('resolveSessionDeviceName', () => {
     expect(
       resolveSessionDeviceName('MacBook Pro', {
         id: 'conn-1',
+        owner_id: 'visitor-1',
         bridge_type: 'codex',
         app_id: 'a',
         app_secret: 's',
@@ -76,9 +77,15 @@ describe('resolveSessionDeviceName', () => {
         session_id: null,
         device_id: null,
         device_name: 'ThinkPad',
+        display_name: null,
+        last_seen_at: null,
+        client_version: null,
         create_time: 0,
         update_time: 0,
       }, presence),
     ).toBe('MacBook Pro')
   })
 })
+
+
+

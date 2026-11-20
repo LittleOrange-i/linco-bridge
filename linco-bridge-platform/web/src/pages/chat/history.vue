@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onLoad, onShow } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@/composables/uni-lifecycle'
 import { computed, ref } from 'vue'
 import AgentHistorySearchRow from '@/components/AgentHistorySearchRow.vue'
 import AgentHistorySearchTopBar from '@/components/AgentHistorySearchTopBar.vue'
@@ -73,11 +73,7 @@ function persistSearchHistories(type: AgentBridgeType) {
   }
 }
 
-async function loadHistory(
-  type: AgentBridgeType,
-  scopedConnectionId?: string,
-  silent = false,
-) {
+async function loadHistory(type: AgentBridgeType, scopedConnectionId?: string, silent = false) {
   if (!silent) {
     loading.value = true
   }
@@ -250,7 +246,7 @@ async function deleteSelected() {
 </script>
 
 <template>
-  <view
+  <div
     class="page-container history-page"
     :class="{ 'history-page--batch': isBatchMode && !isSearchMode }"
     :style="pageSafeStyle"
@@ -273,37 +269,43 @@ async function deleteSelected() {
       @search-clear="keyword = ''"
     />
 
-    <scroll-view class="history-page__body" scroll-y>
-      <view v-if="showSearchHistoryList" class="history-page__search-history">
-        <view v-if="searchHistories.length === 0" class="history-page__state">
-          <text class="history-page__state-text">暂无搜索历史</text>
-        </view>
+    <div class="uni-scroll-view history-page__body">
+      <div v-if="showSearchHistoryList" class="history-page__search-history">
+        <div v-if="searchHistories.length === 0" class="history-page__state">
+          <span class="history-page__state-text">暂无搜索历史</span>
+        </div>
         <template v-else>
-          <view
+          <div
             v-for="item in searchHistories"
             :key="item"
             class="history-page__search-history-row"
-            @tap="useSearchHistory(item)"
+            @click="useSearchHistory(item)"
           >
-            <text class="history-page__search-history-icon">⟲</text>
-            <text class="history-page__search-history-text text-ellipsis">{{ item }}</text>
-            <text class="history-page__search-history-remove" @tap.stop="removeSearchHistory(item)">×</text>
-          </view>
-          <view class="history-page__search-history-clear-wrap">
-            <text class="history-page__search-history-clear" @tap="clearSearchHistories">全部清除</text>
-          </view>
+            <span class="history-page__search-history-icon">⟲</span>
+            <span class="history-page__search-history-text text-ellipsis">{{ item }}</span>
+            <span
+              class="history-page__search-history-remove"
+              @click.stop="removeSearchHistory(item)"
+              >×</span
+            >
+          </div>
+          <div class="history-page__search-history-clear-wrap">
+            <span class="history-page__search-history-clear" @click="clearSearchHistories"
+              >全部清除</span
+            >
+          </div>
         </template>
-      </view>
+      </div>
 
-      <view v-else-if="loading" class="history-page__state">
-        <text class="history-page__state-text">加载中…</text>
-      </view>
+      <div v-else-if="loading" class="history-page__state">
+        <span class="history-page__state-text">加载中…</span>
+      </div>
 
-      <view v-else-if="filteredItems.length === 0" class="history-page__state">
-        <text class="history-page__state-text">{{ emptyMessage }}</text>
-      </view>
+      <div v-else-if="filteredItems.length === 0" class="history-page__state">
+        <span class="history-page__state-text">{{ emptyMessage }}</span>
+      </div>
 
-      <view v-else class="history-page__list" :class="{ 'history-page__list--batch': isBatchMode }">
+      <div v-else class="history-page__list" :class="{ 'history-page__list--batch': isBatchMode }">
         <AgentHistorySearchRow
           v-for="item in filteredItems"
           :key="item.id"
@@ -311,23 +313,23 @@ async function deleteSelected() {
           :query="trimmedQuery"
           :is-batch-mode="isBatchMode"
           :selected="selectedIds.has(item.id)"
-          @tap="handleRowTap(item)"
+          @click="handleRowTap(item)"
           @longpress="enterBatchMode(item)"
           @toggle-selected="toggleSelected(item)"
         />
-      </view>
-    </scroll-view>
+      </div>
+    </div>
 
-    <view v-if="isBatchMode && !isSearchMode" class="history-page__delete-bar">
-      <view
+    <div v-if="isBatchMode && !isSearchMode" class="history-page__delete-bar">
+      <div
         class="history-page__delete-btn"
         :class="{ 'history-page__delete-btn--disabled': selectedIds.size === 0 || isDeleting }"
-        @tap="deleteSelected"
+        @click="deleteSelected"
       >
-        <text class="history-page__delete-text">删除</text>
-      </view>
-    </view>
-  </view>
+        <span class="history-page__delete-text">删除</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

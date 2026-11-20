@@ -12,33 +12,30 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <view class="artifact-block-header">
-    <text class="artifact-block-header__label">{{ label }}</text>
-    <view class="artifact-block-header__actions">
-      <view
-        v-if="canPreview"
-        class="artifact-block-header__mode"
-      >
-        <view
+  <div class="artifact-block-header">
+    <span class="artifact-block-header__label">{{ label }}</span>
+    <div class="artifact-block-header__actions">
+      <div v-if="canPreview" class="artifact-block-header__mode">
+        <div
           class="artifact-block-header__mode-btn"
           :class="{ 'artifact-block-header__mode-btn--active': !showPreview }"
-          @tap="emit('togglePreview', false)"
+          @click="emit('togglePreview', false)"
         >
-          <text class="artifact-block-header__mode-text">代码</text>
-        </view>
-        <view
+          <span class="artifact-block-header__mode-text">代码</span>
+        </div>
+        <div
           class="artifact-block-header__mode-btn"
           :class="{ 'artifact-block-header__mode-btn--active': showPreview }"
-          @tap="emit('togglePreview', true)"
+          @click="emit('togglePreview', true)"
         >
-          <text class="artifact-block-header__mode-text">预览</text>
-        </view>
-      </view>
-      <view class="artifact-block-header__copy" @tap="emit('copy')">
-        <text class="artifact-block-header__copy-text">复制</text>
-      </view>
-    </view>
-  </view>
+          <span class="artifact-block-header__mode-text">预览</span>
+        </div>
+      </div>
+      <div class="artifact-block-header__copy" @click="emit('copy')">
+        <span class="artifact-block-header__copy-text">复制</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

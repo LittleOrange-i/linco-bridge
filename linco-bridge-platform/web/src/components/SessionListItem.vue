@@ -36,26 +36,26 @@ function avatarFor(item: ChatSessionItem): string {
 </script>
 
 <template>
-  <view class="session-item" @tap.stop="handleActivate" @click.stop="handleActivate">
-    <view class="session-item__body">
-      <view class="session-item__avatar-wrap">
-        <image class="session-item__avatar" :src="avatarFor(item)" mode="aspectFill" />
-        <view class="session-item__ai-badge">
-          <text class="session-item__ai-badge-text">AI</text>
-        </view>
-      </view>
-      <view class="session-item__content">
-        <view class="session-item__title-wrap">
-          <text class="session-item__title">{{ item.title }}</text>
-        </view>
-        <view class="session-item__preview-wrap">
-          <text class="session-item__preview">{{ previewText }}</text>
-        </view>
-      </view>
-      <text class="session-item__time">{{ formatConversationTime(item.updatedAt) }}</text>
-    </view>
-    <view class="session-item__divider" />
-  </view>
+  <div class="session-item" @click.stop="handleActivate">
+    <div class="session-item__body">
+      <div class="session-item__avatar-wrap">
+        <img class="session-item__avatar" :src="avatarFor(item)" />
+        <div class="session-item__ai-badge">
+          <span class="session-item__ai-badge-text">AI</span>
+        </div>
+      </div>
+      <div class="session-item__content">
+        <div class="session-item__title-wrap">
+          <span class="session-item__title">{{ item.title }}</span>
+        </div>
+        <div class="session-item__preview-wrap">
+          <span class="session-item__preview">{{ previewText }}</span>
+        </div>
+      </div>
+      <span class="session-item__time">{{ formatConversationTime(item.updatedAt) }}</span>
+    </div>
+    <div class="session-item__divider" />
+  </div>
 </template>
 
 <style scoped lang="scss">

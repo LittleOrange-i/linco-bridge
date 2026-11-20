@@ -39,81 +39,72 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <view class="connect-page">
+  <div class="connect-page">
     <AppNavBar show-back :title="`连接 ${agentName}`" />
 
-    <view class="connect-page__body">
-      <view v-if="loading" class="connect-page__hint">正在获取连接配置…</view>
-      <view v-else-if="error" class="connect-page__error">
-        <text>{{ error }}</text>
-        <view class="connect-page__retry" @tap="emit('refresh')">重试</view>
-      </view>
+    <div class="connect-page__body">
+      <div v-if="loading" class="connect-page__hint">正在获取连接配置…</div>
+      <div v-else-if="error" class="connect-page__error">
+        <span>{{ error }}</span>
+        <div class="connect-page__retry" @click="emit('refresh')">重试</div>
+      </div>
 
       <template v-else>
-        <view class="connect-page__tip card">
-          <view class="connect-page__tip-head">
-            <text class="connect-page__tip-title">{{ tipTitle ?? '复制本机连接配置' }}</text>
-            <view
+        <div class="connect-page__tip card">
+          <div class="connect-page__tip-head">
+            <span class="connect-page__tip-title">{{ tipTitle ?? '复制本机连接配置' }}</span>
+            <div
               v-if="!loading"
               class="connect-page__refresh"
               :class="{ 'connect-page__refresh--disabled': refreshing }"
-              @tap="emit('refresh')"
+              @click="emit('refresh')"
             >
-              {{ refreshing ? '新增中…' : refreshButtonText ?? '新增连接' }}
-            </view>
-          </view>
-          <text class="connect-page__tip-desc">
-            {{
-              tipDesc ??
-                `完成本机配置并连接成功后，${agentName} 会自动出现在 Agent 列表。`
-            }}
-          </text>
-          <text v-if="refreshNote" class="connect-page__refresh-note">{{ refreshNote }}</text>
-        </view>
+              {{ refreshing ? '新增中…' : (refreshButtonText ?? '新增连接') }}
+            </div>
+          </div>
+          <span class="connect-page__tip-desc">
+            {{ tipDesc ?? `完成本机配置并连接成功后，${agentName} 会自动出现在 Agent 列表。` }}
+          </span>
+          <span v-if="refreshNote" class="connect-page__refresh-note">{{ refreshNote }}</span>
+        </div>
 
         <CommandBlock :commands="commandText" @copied="emit('copied')" />
 
-        <view
-          v-if="needsContextBinding && connected && contexts.length"
-          class="context card"
-        >
-          <text class="context__title">{{ contextTitle ?? '选择绑定上下文' }}</text>
-          <text v-if="contextSubtitle" class="context__subtitle">{{ contextSubtitle }}</text>
-          <text v-if="contextNote" class="context__note">{{ contextNote }}</text>
-          <view
+        <div v-if="needsContextBinding && connected && contexts.length" class="context card">
+          <span class="context__title">{{ contextTitle ?? '选择绑定上下文' }}</span>
+          <span v-if="contextSubtitle" class="context__subtitle">{{ contextSubtitle }}</span>
+          <span v-if="contextNote" class="context__note">{{ contextNote }}</span>
+          <div
             v-for="item in contexts"
             :key="item.id"
             class="context__item"
             :class="{ 'context__item--active': selectedContextId === item.id }"
-            @tap="emit('select-context', item.id)"
+            @click="emit('select-context', item.id)"
           >
-            <text class="context__label">{{ item.label }}</text>
-            <text v-if="item.description" class="context__desc">{{ item.description }}</text>
-          </view>
-          <view
+            <span class="context__label">{{ item.label }}</span>
+            <span v-if="item.description" class="context__desc">{{ item.description }}</span>
+          </div>
+          <div
             class="btn btn--primary context__bind"
             :class="{ 'btn--disabled': binding || completing || !selectedContextId }"
-            @tap="emit('bind')"
+            @click="emit('bind')"
           >
-            {{ binding || completing ? '处理中…' : bindButtonText ?? '绑定选中的上下文' }}
-          </view>
-        </view>
+            {{ binding || completing ? '处理中…' : (bindButtonText ?? '绑定选中的上下文') }}
+          </div>
+        </div>
 
-        <view
-          v-else-if="needsContextBinding && connected && !contexts.length"
-          class="context card"
-        >
-          <text class="context__empty">
+        <div v-else-if="needsContextBinding && connected && !contexts.length" class="context card">
+          <span class="context__empty">
             {{ contextEmptyText ?? '未检测到可绑定的上下文，请先在电脑端完成配置' }}
-          </text>
-        </view>
+          </span>
+        </div>
 
-        <view v-if="hasCopied" class="connect-page__actions">
-          <view
+        <div v-if="hasCopied" class="connect-page__actions">
+          <div
             v-if="!needsContextBinding || connected !== true"
             class="btn btn--primary btn--full"
             :class="{ 'btn--disabled': checking }"
-            @tap="emit('check')"
+            @click="emit('check')"
           >
             {{
               checking
@@ -122,27 +113,24 @@ const emit = defineEmits<{
                   ? `已连接 ${agentName}`
                   : '我已复制，获取连接状态'
             }}
-          </view>
+          </div>
 
-          <view
+          <div
             v-if="!needsContextBinding && connected === true"
             class="btn btn--primary btn--full"
             :class="{ 'btn--disabled': completing }"
-            @tap="emit('continue')"
+            @click="emit('continue')"
           >
             {{ completing ? '处理中…' : `进入 ${agentName}` }}
-          </view>
-        </view>
+          </div>
+        </div>
 
-        <text
-          v-if="hasCopied && connected === false"
-          class="connect-page__status-hint"
-        >
+        <span v-if="hasCopied && connected === false" class="connect-page__status-hint">
           未检测到 {{ agentName }} 在线，请确认已在电脑终端执行命令并重试
-        </text>
+        </span>
       </template>
-    </view>
-  </view>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

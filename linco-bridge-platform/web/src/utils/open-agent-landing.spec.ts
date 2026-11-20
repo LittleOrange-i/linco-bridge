@@ -8,9 +8,7 @@ import type { ChatSessionItem } from '@/bridge/types'
 
 describe('open-agent-landing', () => {
   it('builds landing url with agent type only', () => {
-    expect(buildAgentLandingUrl({ agentType: 'codex' })).toBe(
-      '/pages/chat/landing?agentType=codex',
-    )
+    expect(buildAgentLandingUrl({ agentType: 'codex' })).toBe('/pages/chat/landing?agentType=codex')
   })
 
   it('builds landing url with connection id', () => {

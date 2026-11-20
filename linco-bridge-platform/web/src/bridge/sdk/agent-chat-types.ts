@@ -12,10 +12,7 @@ import type {
  * Methods marked optional are Phase 2 (native bridge plugin).
  */
 export interface AgentChatSdk {
-  getLandingHeader(
-    agentType: AgentBridgeType,
-    connectionId?: string,
-  ): Promise<AgentLandingHeader>
+  getLandingHeader(agentType: AgentBridgeType, connectionId?: string): Promise<AgentLandingHeader>
   listHistory(
     agentType: AgentBridgeType,
     options?: { limit?: number; offset?: number; connectionId?: string },
@@ -24,10 +21,7 @@ export interface AgentChatSdk {
   startConversation(input: StartConversationInput): Promise<StartConversationResult>
 
   /** Workspace picker — bridge plugin will implement. */
-  pickWorkspace?(
-    agentType: AgentBridgeType,
-    connectionId?: string,
-  ): Promise<AgentWorkspace | null>
+  pickWorkspace?(agentType: AgentBridgeType, connectionId?: string): Promise<AgentWorkspace | null>
   /** Agent side panel / settings — bridge plugin or native sheet. */
   openAgentPanel?(agentType: AgentBridgeType): void
   /** Attachment picker — bridge plugin or uni.chooseFile. */

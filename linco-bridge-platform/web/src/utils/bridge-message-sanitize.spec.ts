@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  CodexHostDirectiveStreamFilter,
-  sanitizeCodexHostDirectives,
-} from './codex-host-directive'
+import { CodexHostDirectiveStreamFilter, sanitizeCodexHostDirectives } from './codex-host-directive'
 import {
   isBridgeAttachmentOutboundNotice,
   sanitizeBridgeAssistantContent,
@@ -33,8 +30,7 @@ describe('codex-host-directive', () => {
 
 describe('bridge-message-sanitize', () => {
   it('strips bridge attachment outbound notice prefix', () => {
-    const notice =
-      '📎 已处理 2 个附件：图片与文档将直接发送给当前 Agent 识别'
+    const notice = '📎 已处理 2 个附件：图片与文档将直接发送给当前 Agent 识别'
     const input = `${notice}\n\n## 分析结果`
     expect(stripBridgeAttachmentOutboundNotice(input)).toBe('## 分析结果')
     expect(isBridgeAttachmentOutboundNotice(notice)).toBe(true)

@@ -3,10 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 import type { AgentBridgeBindableContext } from '@/bridge/types'
 import { useBridgeStore } from '@/stores'
-import {
-  bridgeContextPickerState,
-  resolveBridgeContextPicker,
-} from '@/utils/bridge-context-picker'
+import { bridgeContextPickerState, resolveBridgeContextPicker } from '@/utils/bridge-context-picker'
 
 const bridgeStore = useBridgeStore()
 
@@ -69,44 +66,40 @@ function handleRetry() {
 </script>
 
 <template>
-  <view
-    v-if="bridgeContextPickerState.visible"
-    class="context-sheet-mask"
-    @tap="handleClose"
-  >
-    <view class="context-sheet" @tap.stop>
-      <view class="context-sheet__header">
-        <text class="context-sheet__title">{{ sheetTitle }}</text>
-        <view class="context-sheet__close" @tap="handleClose">取消</view>
-      </view>
+  <div v-if="bridgeContextPickerState.visible" class="context-sheet-mask" @click="handleClose">
+    <div class="context-sheet" @click.stop>
+      <div class="context-sheet__header">
+        <span class="context-sheet__title">{{ sheetTitle }}</span>
+        <div class="context-sheet__close" @click="handleClose">取消</div>
+      </div>
 
-      <view v-if="loading" class="context-sheet__state">
-        <text>加载中…</text>
-      </view>
+      <div v-if="loading" class="context-sheet__state">
+        <span>加载中…</span>
+      </div>
 
-      <view v-else-if="error" class="context-sheet__state">
-        <text>{{ error }}</text>
-        <view class="context-sheet__retry" @tap="handleRetry">重试</view>
-      </view>
+      <div v-else-if="error" class="context-sheet__state">
+        <span>{{ error }}</span>
+        <div class="context-sheet__retry" @click="handleRetry">重试</div>
+      </div>
 
-      <view v-else-if="contexts.length === 0" class="context-sheet__state">
-        <text>未检测到可绑定的 Profile</text>
-      </view>
+      <div v-else-if="contexts.length === 0" class="context-sheet__state">
+        <span>未检测到可绑定的 Profile</span>
+      </div>
 
-      <scroll-view v-else class="context-sheet__list" scroll-y>
-        <view
+      <div v-else class="uni-scroll-view context-sheet__list">
+        <div
           v-for="item in contexts"
           :key="item.id"
           class="context-sheet__item"
           :class="{ 'context-sheet__item--active': selectedContextId === item.id }"
-          @tap="handleSelect(item.id)"
+          @click="handleSelect(item.id)"
         >
-          <text class="context-sheet__label">{{ item.label }}</text>
-          <text v-if="item.description" class="context-sheet__desc">{{ item.description }}</text>
-        </view>
-      </scroll-view>
-    </view>
-  </view>
+          <span class="context-sheet__label">{{ item.label }}</span>
+          <span v-if="item.description" class="context-sheet__desc">{{ item.description }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

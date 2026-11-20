@@ -57,7 +57,7 @@ Linco App、Reference Web 或自定义客户端
 | 仓库区域 | 作用 |
 | --- | --- |
 | `linco-bridge-connect` | 本地 Agent CLI 连接器，处理会话、权限、附件和生成文件。 |
-| `linco-bridge-platform` | 基于 NestJS + UniApp 的开源 `linco-demo` 通道参考实现。 |
+| `linco-bridge-platform` | 基于 NestJS + Vue 3/Capacitor 的开源 `linco-demo` 通道参考实现。 |
 | `docs` | 安装、架构、协议、安全、兼容性和扩展文档。 |
 
 仓库不包含完整 Linco App，也不包含官方托管云服务实现。
@@ -202,3 +202,4 @@ linco-connect start --daemon
 ## ⚖️ 许可证
 
 Linco Bridge 基于 [MIT License](LICENSE) 开源。许可证适用于仓库代码和文档，不单独授予超出正常指代范围的 Linco 名称、Logo 或其他品牌资产使用权。
+

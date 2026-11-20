@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { hasMarkdownStructure, parseMarkdownBlocks, parseInlineNodes } from '@/utils/markdown-render'
+import {
+  hasMarkdownStructure,
+  parseMarkdownBlocks,
+  parseInlineNodes,
+} from '@/utils/markdown-render'
 
 describe('markdown-render', () => {
   it('parses headings and lists', () => {

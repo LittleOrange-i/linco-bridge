@@ -1,0 +1,9 @@
+{
+  "appId": "com.lincotalk.bridge",
+  "appName": "Linco Bridge",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "http"
+  }
+}

@@ -19,14 +19,14 @@ function handleBack() {
 </script>
 
 <template>
-  <view class="nav-bar" :style="navBarSafeStyle">
-    <view class="nav-bar__inner">
-      <view v-if="showBack" class="nav-bar__back" @tap="handleBack">
-        <text class="nav-bar__back-icon">‹</text>
-      </view>
-      <text v-if="title" class="nav-bar__title">{{ title }}</text>
-    </view>
-  </view>
+  <div class="nav-bar" :style="navBarSafeStyle">
+    <div class="nav-bar__inner">
+      <div v-if="showBack" class="nav-bar__back" @click="handleBack">
+        <span class="nav-bar__back-icon">‹</span>
+      </div>
+      <span v-if="title" class="nav-bar__title">{{ title }}</span>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

@@ -51,7 +51,7 @@ async function handleCopy() {
 </script>
 
 <template>
-  <view class="chat-code" :class="`chat-code--${variant ?? 'assistant'}`">
+  <div class="chat-code" :class="`chat-code--${variant ?? 'assistant'}`">
     <ArtifactBlockHeader
       :label="languageLabel"
       :can-preview="canPreview"
@@ -60,23 +60,18 @@ async function handleCopy() {
       @toggle-preview="showPreview = $event"
     />
 
-    <view v-if="canPreview && showPreview" class="chat-code__preview">
+    <div v-if="canPreview && showPreview" class="chat-code__preview">
       <MessageMarkdownBody :content="code" :variant="variant" />
-    </view>
+    </div>
 
-    <scroll-view v-else scroll-y class="chat-code__scroll" :show-scrollbar="false">
-      <!-- #ifdef H5 -->
+    <div v-else class="uni-scroll-view chat-code__scroll">
       <div class="chat-code__body chat-code__body--highlighted" v-html="highlightedBlockHtml" />
-      <!-- #endif -->
-      <!-- #ifndef H5 -->
-      <text class="chat-code__body" selectable>{{ code }}</text>
-      <!-- #endif -->
-    </scroll-view>
+    </div>
 
-    <view v-if="showStreamingIndicator" class="chat-code__streaming">
-      <text class="chat-code__streaming-text">正在输出...</text>
-    </view>
-  </view>
+    <div v-if="showStreamingIndicator" class="chat-code__streaming">
+      <span class="chat-code__streaming-text">正在输出...</span>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

@@ -6,10 +6,7 @@ import SlashCommandSuggestionPanel from '@/components/SlashCommandSuggestionPane
 import type { OutboundChatFile } from '@/api/session-api'
 import type { SlashCommandItem } from '@/bridge/slash-command'
 import { useChatTextareaSubmit } from '@/composables/useChatTextareaSubmit'
-import {
-  extractTextareaInputMeta,
-  useSlashCommandInput,
-} from '@/composables/useSlashCommandInput'
+import { extractTextareaInputMeta, useSlashCommandInput } from '@/composables/useSlashCommandInput'
 import { CHAT_ICON } from '@/constants/chat-icons'
 
 const props = withDefaults(
@@ -114,13 +111,13 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
 </script>
 
 <template>
-  <view class="chat-input">
+  <div class="chat-input">
     <SlashCommandSuggestionPanel
       v-if="suggestions.length > 0"
       :commands="suggestions"
       @select="handleSlashSelect"
     />
-    <view class="chat-input__shell">
+    <div class="chat-input__shell">
       <PendingAttachmentList
         v-if="pendingFiles.length > 0"
         :files="pendingFiles"
@@ -131,49 +128,42 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
         :value="draft"
         :placeholder="placeholder"
         :disabled="disabled || sending"
-        placeholder-class="chat-input__placeholder"
-        auto-height
-        :maxlength="-1"
         @input="onInput"
-        @confirm="handleSend"
+        @keydown.enter="handleSend"
         @keydown="onKeydown"
         @compositionstart="onCompositionStart"
         @compositionend="onCompositionEnd"
       />
-      <view class="chat-input__toolbar">
-        <view
+      <div class="chat-input__toolbar">
+        <div
           class="chat-input__tool"
           :class="{ 'chat-input__tool--disabled': !addEnabled }"
-          @tap="handleAdd"
+          @click="handleAdd"
         >
-          <image
-            class="chat-input__icon"
-            :src="CHAT_ICON.add"
-            mode="aspectFit"
-          />
-        </view>
+          <img class="chat-input__icon" :src="CHAT_ICON.add" />
+        </div>
 
-        <view v-if="showCompactBridgeToolbar" class="chat-input__bridge-compact">
-          <text class="chat-input__bridge-project-text">
+        <div v-if="showCompactBridgeToolbar" class="chat-input__bridge-compact">
+          <span class="chat-input__bridge-project-text">
             {{ bridgeProjectLabel || '临时会话' }}
-          </text>
-          <view class="chat-input__bridge-divider" />
-          <view class="chat-input__bridge-settings" @tap.stop="handlePickSettings">
-            <text class="chat-input__bridge-settings-text">{{ bridgeSettingsText }}</text>
-            <view class="chat-input__bridge-settings-chevron" />
-          </view>
-        </view>
+          </span>
+          <div class="chat-input__bridge-divider" />
+          <div class="chat-input__bridge-settings" @click.stop="handlePickSettings">
+            <span class="chat-input__bridge-settings-text">{{ bridgeSettingsText }}</span>
+            <div class="chat-input__bridge-settings-chevron" />
+          </div>
+        </div>
 
-        <view v-else-if="bridgeProjectLabel" class="chat-input__project-chip">
-          <text class="chat-input__project-chip-text">{{ bridgeProjectLabel }}</text>
-        </view>
+        <div v-else-if="bridgeProjectLabel" class="chat-input__project-chip">
+          <span class="chat-input__project-chip-text">{{ bridgeProjectLabel }}</span>
+        </div>
 
-        <view class="chat-input__toolbar-spacer" />
+        <div class="chat-input__toolbar-spacer" />
 
-        <view v-if="canSend && !sending" class="chat-input__actions">
-          <view class="chat-input__tool" @tap="handleVoice">
-            <image class="chat-input__icon" :src="CHAT_ICON.voice" mode="aspectFit" />
-          </view>
+        <div v-if="canSend && !sending" class="chat-input__actions">
+          <div class="chat-input__tool" @click="handleVoice">
+            <img class="chat-input__icon" :src="CHAT_ICON.voice" />
+          </div>
           <ChatInputActionButton
             :can-send="canSend"
             :is-send-disabled="isSendDisabled || disabled"
@@ -181,7 +171,7 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
             @send="handleSend"
             @voice="handleVoice"
           />
-        </view>
+        </div>
 
         <ChatInputActionButton
           v-else
@@ -192,9 +182,9 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
           @stop="emit('stop')"
           @voice="handleVoice"
         />
-      </view>
-    </view>
-  </view>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

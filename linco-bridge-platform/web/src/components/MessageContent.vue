@@ -15,10 +15,7 @@ import {
 import { showToast } from '@/utils/format'
 import { useThrottledStreamingContent } from '@/composables/useThrottledStreamingContent'
 
-
-
 const props = defineProps<{
-
   content: string
 
   variant?: 'user' | 'assistant'
@@ -26,10 +23,7 @@ const props = defineProps<{
   sessionId?: string
 
   streaming?: boolean
-
 }>()
-
-
 
 const loadingTarget = ref('')
 
@@ -44,41 +38,15 @@ const segments = computed(() =>
 
 const useRich = computed(() => hasRichMessageContent(renderedContent.value, props.streaming))
 
-
-
 async function handleLinkTap(target: string) {
-
   const trimmed = target.trim()
 
   if (!trimmed || props.streaming) return
 
-
-
   if (/^https?:\/\//i.test(trimmed)) {
-
-    // #ifdef H5
-
     window.open(trimmed, '_blank', 'noopener,noreferrer')
-
-    // #endif
-
-    // #ifndef H5
-
-    uni.setClipboardData({
-
-      data: trimmed,
-
-      success: () => showToast('链接已复制', 'success'),
-
-    })
-
-    // #endif
-
     return
-
   }
-
-
 
   if (!isOpenableFileLinkTarget(trimmed)) {
     showToast('暂不支持打开该链接')
@@ -124,33 +92,20 @@ async function handleLinkTap(target: string) {
   } finally {
     loadingTarget.value = ''
   }
-
 }
-
 </script>
 
-
-
 <template>
-
   <MessageMarkdown
-
     v-if="!useRich"
-
     :content="renderedContent"
-
     :variant="variant"
-
     :streaming="streaming"
-
     @link-tap="handleLinkTap"
-
   />
 
-  <view v-else class="message-content">
-
+  <div v-else class="message-content">
     <template v-for="(segment, index) in segments" :key="`${segment.type}-${index}`">
-
       <ChatHtmlBlock
         v-if="segment.type === 'html'"
         :html="segment.content"
@@ -159,67 +114,39 @@ async function handleLinkTap(target: string) {
       />
 
       <ChatCodeBlock
-
         v-else-if="segment.type === 'code'"
-
         :code="segment.content"
-
         :language="segment.language"
-
         :variant="variant"
-
         :show-streaming-indicator="streaming === true && segment.incomplete === true"
-
       />
 
-      <view
-
+      <div
         v-else-if="segment.type === 'link'"
-
         class="message-content__link"
-
         :class="{
-
           'message-content__link--loading': loadingTarget === segment.target,
 
           'message-content__link--disabled': streaming,
-
         }"
-
-        @tap="handleLinkTap(segment.target)"
-
+        @click="handleLinkTap(segment.target)"
       >
-
-        <text class="message-content__link-text">{{ segment.label }}</text>
-
-      </view>
+        <span class="message-content__link-text">{{ segment.label }}</span>
+      </div>
 
       <MessageMarkdown
-
         v-else
-
         :content="segment.content"
-
         :variant="variant"
-
         :streaming="streaming"
-
         @link-tap="handleLinkTap"
-
       />
-
     </template>
-
-  </view>
-
+  </div>
 </template>
 
-
-
 <style scoped lang="scss">
-
 .message-content__link {
-
   display: inline-flex;
 
   margin: 4rpx 0;
@@ -229,37 +156,21 @@ async function handleLinkTap(target: string) {
   border-radius: 8rpx;
 
   background: rgba(0, 117, 74, 0.12);
-
 }
-
-
 
 .message-content__link--loading {
-
   opacity: 0.6;
-
 }
-
-
 
 .message-content__link--disabled {
-
   opacity: 0.75;
-
 }
 
-
-
 .message-content__link-text {
-
   font-size: 26rpx;
 
   color: #00754a;
 
   text-decoration: underline;
-
 }
-
 </style>
-
-

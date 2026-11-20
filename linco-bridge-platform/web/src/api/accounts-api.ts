@@ -1,9 +1,6 @@
 import { apiPost } from '@/api/http-client'
 import type { BridgeCommandResult } from '@/api/session-api'
-import {
-  parseAccountsCommandResult,
-  type AccountsCommandPayload,
-} from '@/utils/connected-accounts'
+import { parseAccountsCommandResult, type AccountsCommandPayload } from '@/utils/connected-accounts'
 
 export async function fetchConnectedAccounts(): Promise<AccountsCommandPayload> {
   const res = await apiPost<BridgeCommandResult>('/api/bridge-command', {

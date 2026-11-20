@@ -57,9 +57,9 @@ const tailIndicator = computed(() =>
 </script>
 
 <template>
-  <view :id="message.id" class="message-row" :class="`message-row--${message.role}`">
-    <view v-if="message.role === 'user'" class="message-row__user-wrap">
-      <view class="message-row__user-bubble">
+  <div :id="message.id" class="message-row" :class="`message-row--${message.role}`">
+    <div v-if="message.role === 'user'" class="message-row__user-wrap">
+      <div class="message-row__user-bubble">
         <MessageAttachmentList
           v-if="message.attachments?.length"
           :attachments="message.attachments"
@@ -73,16 +73,16 @@ const tailIndicator = computed(() =>
           :session-id="message.sessionId"
           :streaming="message.streaming"
         />
-      </view>
-    </view>
+      </div>
+    </div>
 
-    <view v-else class="message-row__assistant-wrap">
+    <div v-else class="message-row__assistant-wrap">
       <AgentThinkingEntry
         v-if="hasProcessEntry"
         :started-at="processStartedAt"
         :ended-at="processEndedAt"
         :streaming="processStreaming"
-        @tap="sheetVisible = true"
+        @click="sheetVisible = true"
       />
 
       <MessageAttachmentList
@@ -92,21 +92,21 @@ const tailIndicator = computed(() =>
         @preview-load="emit('layoutChange')"
       />
 
-      <view v-if="message.content" class="message-row__assistant-body">
+      <div v-if="message.content" class="message-row__assistant-body">
         <MessageContent
           :content="message.content"
           variant="assistant"
           :session-id="message.sessionId"
           :streaming="message.streaming"
         />
-      </view>
+      </div>
 
       <ChatStreamingIndicator
         v-if="tailIndicator.show && tailIndicator.label"
         class="message-row__streaming-tail"
         :label="tailIndicator.label"
       />
-    </view>
+    </div>
 
     <ThinkingProcessSheet
       :visible="sheetVisible"
@@ -114,7 +114,7 @@ const tailIndicator = computed(() =>
       :streaming="processStreaming"
       @close="sheetVisible = false"
     />
-  </view>
+  </div>
 </template>
 
 <style scoped lang="scss">

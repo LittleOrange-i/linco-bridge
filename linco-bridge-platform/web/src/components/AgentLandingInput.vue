@@ -6,10 +6,7 @@ import SlashCommandSuggestionPanel from '@/components/SlashCommandSuggestionPane
 import type { OutboundChatFile } from '@/api/session-api'
 import type { SlashCommandItem } from '@/bridge/slash-command'
 import { useChatTextareaSubmit } from '@/composables/useChatTextareaSubmit'
-import {
-  extractTextareaInputMeta,
-  useSlashCommandInput,
-} from '@/composables/useSlashCommandInput'
+import { extractTextareaInputMeta, useSlashCommandInput } from '@/composables/useSlashCommandInput'
 import { CHAT_ICON } from '@/constants/chat-icons'
 
 const props = withDefaults(
@@ -99,13 +96,13 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
 </script>
 
 <template>
-  <view class="landing-input">
+  <div class="landing-input">
     <SlashCommandSuggestionPanel
       v-if="suggestions.length > 0"
       :commands="suggestions"
       @select="handleSlashSelect"
     />
-    <view class="landing-input__card">
+    <div class="landing-input__card">
       <PendingAttachmentList
         v-if="pendingFiles.length > 0"
         :files="pendingFiles"
@@ -116,47 +113,48 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
         :value="draft"
         :placeholder="placeholder"
         :disabled="disabled || starting"
-        placeholder-class="landing-input__placeholder"
-        auto-height
-        :maxlength="-1"
         @input="onInput"
-        @confirm="handleSend"
+        @keydown.enter="handleSend"
         @keydown="onKeydown"
         @compositionstart="onCompositionStart"
         @compositionend="onCompositionEnd"
       />
-      <view class="landing-input__toolbar">
-        <view
+      <div class="landing-input__toolbar">
+        <div
           class="landing-input__tool"
           :class="{ 'landing-input__tool--disabled': !addEnabled }"
-          @tap="handleAdd"
+          @click="handleAdd"
         >
-          <image class="landing-input__icon" :src="CHAT_ICON.add" mode="aspectFit" />
-        </view>
+          <img class="landing-input__icon" :src="CHAT_ICON.add" />
+        </div>
 
-        <view v-if="useBridgeCompactToolbar" class="landing-input__bridge-compact">
-          <text class="landing-input__bridge-project-text">临时会话</text>
-          <view class="landing-input__bridge-divider" />
-          <view class="landing-input__bridge-settings" @tap="emit('pick-settings')">
-            <text class="landing-input__bridge-settings-text">{{ bridgeSettingsText }}</text>
-            <view class="landing-input__bridge-settings-chevron" />
-          </view>
-        </view>
+        <div v-if="useBridgeCompactToolbar" class="landing-input__bridge-compact">
+          <span class="landing-input__bridge-project-text">临时会话</span>
+          <div class="landing-input__bridge-divider" />
+          <div class="landing-input__bridge-settings" @click="emit('pick-settings')">
+            <span class="landing-input__bridge-settings-text">{{ bridgeSettingsText }}</span>
+            <div class="landing-input__bridge-settings-chevron" />
+          </div>
+        </div>
 
-        <view class="landing-input__toolbar-spacer" />
+        <div class="landing-input__toolbar-spacer" />
 
-        <view v-if="canSend && !starting" class="landing-input__actions">
-          <view class="landing-input__tool" @tap="handleVoice">
-            <image class="landing-input__icon" :src="CHAT_ICON.voice" mode="aspectFit" />
-          </view>
-          <ChatInputActionButton :can-send="canSend" :is-send-disabled="disabled" @send="handleSend" />
-        </view>
-        <view v-else class="landing-input__tool landing-input__tool--right" @tap="handleVoice">
-          <image class="landing-input__icon" :src="CHAT_ICON.voice" mode="aspectFit" />
-        </view>
-      </view>
-    </view>
-  </view>
+        <div v-if="canSend && !starting" class="landing-input__actions">
+          <div class="landing-input__tool" @click="handleVoice">
+            <img class="landing-input__icon" :src="CHAT_ICON.voice" />
+          </div>
+          <ChatInputActionButton
+            :can-send="canSend"
+            :is-send-disabled="disabled"
+            @send="handleSend"
+          />
+        </div>
+        <div v-else class="landing-input__tool landing-input__tool--right" @click="handleVoice">
+          <img class="landing-input__icon" :src="CHAT_ICON.voice" />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

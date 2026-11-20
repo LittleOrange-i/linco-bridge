@@ -2,6 +2,7 @@ import type { ChatMessageAttachment } from '@/bridge/types'
 import { showToast } from '@/utils/format'
 import { isImageAttachment } from '@/utils/chat-attachments'
 import { isH5Runtime } from '@/utils/platform-runtime'
+import { Share } from '@capacitor/share'
 
 function isHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value)
@@ -166,8 +167,7 @@ function shouldPreviewInline(mimeType: string, filename: string): boolean {
 }
 
 function getUserDataPath(): string {
-  const env = (uni as unknown as { env?: { USER_DATA_PATH?: string } }).env
-  return env?.USER_DATA_PATH ?? ''
+  return 'data'
 }
 
 function writeBase64ToTempFile(base64: string, filename: string): Promise<string> {
@@ -180,7 +180,7 @@ function writeBase64ToTempFile(base64: string, filename: string): Promise<string
     }
 
     const filePath = `${root}/${Date.now()}-${sanitizeFilename(filename)}`
-    fs.writeFile({
+    fs!.writeFile({
       filePath,
       data: base64,
       encoding: 'base64',
@@ -191,14 +191,7 @@ function writeBase64ToTempFile(base64: string, filename: string): Promise<string
 }
 
 async function openLocalFilePath(filePath: string) {
-  await new Promise<void>((resolve, reject) => {
-    uni.openDocument({
-      filePath,
-      showMenu: true,
-      success: () => resolve(),
-      fail: (error) => reject(error),
-    })
-  })
+  void Share.share({ title: '文件', url: filePath, dialogTitle: '打开文件' }).catch(() => undefined)
 }
 
 export async function openChatAttachment(attachment: ChatMessageAttachment & { base64?: string }) {

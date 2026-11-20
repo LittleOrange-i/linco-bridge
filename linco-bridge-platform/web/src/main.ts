@@ -1,16 +1,20 @@
-import { createSSRApp } from 'vue'
+import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+
 import App from './App.vue'
-import { mountAppOverlayHostForH5 } from '@/utils/mount-app-overlay'
+import { router } from '@/router'
+import { vFocus } from '@/directives/v-focus'
+import { installUniCompat } from '@/utils/uni-compat'
+import { mountAppOverlayHost } from '@/utils/mount-app-overlay'
+import './styles/global.scss'
+import 'highlight.js/styles/github.css'
 
-export function createApp() {
-  const app = createSSRApp(App)
-  const pinia = createPinia()
-  app.use(pinia)
+installUniCompat()
 
-  if (typeof document !== 'undefined') {
-    queueMicrotask(() => mountAppOverlayHostForH5(pinia))
-  }
-
-  return { app }
-}
+const pinia = createPinia()
+const app = createApp(App)
+app.use(pinia)
+app.use(router)
+app.directive('focus', vFocus)
+app.mount('#app')
+mountAppOverlayHost(pinia)

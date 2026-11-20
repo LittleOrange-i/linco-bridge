@@ -1,22 +1,31 @@
 {
-  "name": "Linco Bridge",
-  "appid": "",
-  "description": "Self-hosted bridge demo for Codex, Claude Code, Hermes and OpenClaw",
-  "versionName": "0.1.0",
-  "versionCode": "100",
-  "transformPx": false,
-  "h5": {
-    "router": {
-      "mode": "hash"
+    "name" : "Linco Bridge",
+    "appid" : "__UNI__CED1B37",
+    "vueVersion" : "3",
+    "description" : "Self-hosted bridge demo for Codex, Claude Code, Hermes and OpenClaw",
+    "versionName" : "0.1.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "h5" : {
+        "router" : {
+            "mode" : "hash"
+        },
+        "devServer" : {
+            "port" : 5173
+        }
     },
-    "devServer": {
-      "port": 5173
+    "mp-weixin" : {
+        "appid" : "wx39880067ea3c7766",
+        "setting" : {
+            "urlCheck" : false
+        }
+    },
+    "locale" : "zh-Hans",
+    "app-plus" : {
+        "distribute" : {
+            "ios" : {
+                "dSYMs" : false
+            }
+        }
     }
-  },
-  "mp-weixin": {
-    "appid": "wx39880067ea3c7766",
-    "setting": {
-      "urlCheck": false
-    }
-  }
 }

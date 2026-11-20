@@ -19,15 +19,15 @@ describe('buildBridgeHeaderSubtitle', () => {
   })
 
   it('shows bound profile, device and online status for openclaw', () => {
-    expect(
-      buildBridgeHeaderSubtitle('openclaw', true, 'HQ-TS-0182', 'My Agent'),
-    ).toBe('My Agent · HQ-TS-0182 · 在线')
+    expect(buildBridgeHeaderSubtitle('openclaw', true, 'HQ-TS-0182', 'My Agent')).toBe(
+      'My Agent · HQ-TS-0182 · 在线',
+    )
   })
 
   it('shows bound profile, device and online status for hermes', () => {
-    expect(
-      buildBridgeHeaderSubtitle('hermes', true, 'HQ-TS-0184', 'Product Profile'),
-    ).toBe('Product Profile · HQ-TS-0184 · 在线')
+    expect(buildBridgeHeaderSubtitle('hermes', true, 'HQ-TS-0184', 'Product Profile')).toBe(
+      'Product Profile · HQ-TS-0184 · 在线',
+    )
   })
 
   it('falls back to device name for hermes when profile is missing', () => {
