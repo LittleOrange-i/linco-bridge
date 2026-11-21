@@ -5,99 +5,98 @@
 <h1 align="center">Linco Bridge</h1>
 
 <p align="center">
-  一个开放的桥接层，用来把运行在个人电脑上的 AI Agent 工具连接到
-  Web、H5、小程序、App、IM 或自定义客户端。
+  把运行在个人电脑上的 AI Agent（Codex / Claude / DeepSeek Harness / Hermes / OpenClaw）
+  桥接到手机端：远程查看任务、随时开始 / 继续 / 结束，Agent 始终在你的电脑上执行。
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-open%20source%20alpha-0f766e" alt="status: open source alpha" />
-  <img src="https://img.shields.io/badge/agents-Codex%20%7C%20Claude%20%7C%20Hermes%20%7C%20OpenClaw-2563eb" alt="supported agents" />
-  <img src="https://img.shields.io/badge/channel-official%20%2B%20reference%20platform-f59e0b" alt="channel types" />
+  <img src="https://img.shields.io/badge/agents-Codex%20%7C%20Claude%20%7C%20DeepSeek%20%7C%20Hermes%20%7C%20OpenClaw-2563eb" alt="supported agents" />
+  <img src="https://img.shields.io/badge/移动端-安卓%20APK%20%2B%20H5-f59e0b" alt="mobile: android apk + h5" />
   <img src="https://img.shields.io/badge/license-MIT-111827" alt="license: MIT" />
 </p>
 
 **项目状态：** Open Source Alpha。接口和兼容性可能变化，破坏性变更将配套迁移说明。
 
-<p align="center">
-  <a href="https://testflight.apple.com/join/Ahm1encB">iOS 下载</a>
-  ·
-  <a href="https://www.lincotalk.com/download/apk/linco.apk">Android 下载</a>
-  ·
-  <a href="https://bridge-demo.lincotalk.com">在线 Demo</a>
-  ·
-  <a href="https://www.bilibili.com/video/BV18Fgf6CEpC/">观看演示</a>
-  ·
-  <a href="docs/zh-CN/quick-start.md">快速开始</a>
-  ·
-  <a href="README.md">English</a>
-</p>
-
-![Linco Bridge 主视觉预览](docs/images/demo/linco-bridge-hero.png)
-
 ## ✨ 亮点
 
-| 本地优先 | 面向 Agent 的交互 | 开放扩展 |
+| 本地优先 | 任务控制台 | 无官方账号依赖 |
 | --- | --- | --- |
-| Agent CLI 继续运行在用户电脑上，同时可在远端客户端访问会话、附件和生成文件。 | 在专用客户端中呈现流式输出、权限确认、工具调用、文件和长会话，而不只是转发消息。 | 复用连接器、协议工具、SDK 和 channel adapter，构建自定义 H5、小程序、App、Web 或 IM 体验。 |
+| Agent 任务继续运行在你的电脑上，手机只做查看和控制，代码与数据不出本机。 | WorkBuddy 式三层结构：设备卡片 → 任务控制台（运行中 / 最近任务）→ 聊天页流式对话，支持远程继续任务。 | Codex 无需官方账号登录：自动发现 Codex Desktop 自带的 codex 二进制，配合 CC Switch 等第三方 API 配置即可跑通全链路，也不要求安装 codex CLI。 |
 
-## 🧭 项目概览
-
-Linco Bridge 连接本地 Agent CLI 与远端客户端，Agent 仍在用户自己的电脑上执行。
+## 🧭 架构
 
 ```text
-本地 Agent CLI
-    ↕ 本地进程、Gateway 或会话文件
-用户电脑上的 linco-connect
-    ↕ 已鉴权 WebSocket 桥接
-官方 Linco 通道、开源参考平台或自定义后端
-    ↕
-Linco App、Reference Web 或自定义客户端
+你的电脑
+ ├─ Codex Desktop（正在跑的任务） / Claude / DeepSeek Harness
+ └─ linco-connect 连接器
+     ├─ 自动发现 Codex Desktop 自带 codex.exe，spawn app-server
+     ├─ 读取本地 ~/.codex / ~/.claude 会话数据
+     └─ 全量任务列表（/sessions --all）+ running 运行状态
+        ↕ WebSocket（token = appId:appSecret）
+服务器（NestJS，默认端口 3300，SQLite）
+ ├─ REST + SSE 中继，visitor 免登录会话隔离
+ └─ GET /api/agent-bridges/:type/threads  ← 任务控制台数据源
+        ↕ REST + SSE
+移动端（Vue 3 + Capacitor 安卓 App / H5）
+ └─ 消息 / 设备（任务控制台）/ 桥接 三 Tab + 聊天页（流式 + 停止）
 ```
 
 | 仓库区域 | 作用 |
 | --- | --- |
-| `linco-bridge-connect` | 本地 Agent CLI 连接器，处理会话、权限、附件和生成文件。 |
-| `linco-bridge-platform` | 基于 NestJS + Vue 3/Capacitor 的开源 `linco-demo` 通道参考实现。 |
-| `docs` | 安装、架构、协议、安全、兼容性和扩展文档。 |
+| `linco-bridge-connect` | 本地连接器：适配 Agent CLI/Desktop，维护会话、权限、附件、模型列表与运行状态。 |
+| `linco-bridge-platform/server` | NestJS 服务器：设备与任务中继、会话存储、任务控制台 API。 |
+| `linco-bridge-platform/web` | 移动端：Vue 3 + Capacitor 安卓 App（可打包 APK），H5 开发模式。 |
+| `docs` | 架构、协议、安全、兼容性和扩展文档。 |
 
-仓库不包含完整 Linco App，也不包含官方托管云服务实现。
+## 🚀 快速开始（Windows，三步）
 
-## 🚀 选择体验路径
+### 第 1 步：启动电脑端服务
 
-| 路径 | 适合场景 | 所需操作 |
-| --- | --- | --- |
-| Linco App | 直接体验官方产品链路 | 安装 App，执行页面生成的连接命令。 |
-| 开源参考平台 | 本地验证、自部署评估和二次开发 | 启动 `linco-bridge-platform/server` 和 `linco-bridge-platform/web`。 |
-| 在线 Demo | 不部署平台，快速验证公网桥接 | 打开在线 H5 或小程序，在本机执行生成的连接命令。 |
+双击仓库根目录的 **`一键启动电脑端服务.bat`**，会打开两个窗口：
 
-### 1. Linco App
+| 窗口 | 内容 |
+| --- | --- |
+| Linco 服务器(3300) | REST + WebSocket 中继，监听 `http://127.0.0.1:3300` |
+| Linco 连接器 | 读取 `%USERPROFILE%\.linco\config.json`，桥接本机 Agent 与服务器 |
 
-下载 Linco App：
-
-- [iOS TestFlight](https://testflight.apple.com/join/Ahm1encB)
-- [Android APK](https://www.lincotalk.com/download/apk/linco.apk)（安卓端使用与运行说明见[安卓端构建与运行指南](docs/zh-CN/android.md)）
-
-在 App 中打开 **桥接**，选择 Agent 导入方式，然后在已安装 Agent CLI 的电脑上执行页面生成的命令。命令形态通常如下：
+也可以手动启动：
 
 ```bash
-npm install -g linco-connect
-linco-connect init --token "<app-id>:<app-secret>" --agent codex
-linco-connect start --daemon
-```
-
-返回 App，确认连接器在线后发送测试消息。
-
-### 2. 开源参考平台
-
-启动后端：
-
-```bash
+# 终端 1：服务器
 cd linco-bridge-platform/server
 npm install
 npm run start:dev
+
+# 终端 2：连接器
+cd linco-bridge-connect
+npm install
+node bin/linco-connect.js start
 ```
 
-在另一个终端启动 H5：
+### 第 2 步：连接 Agent（Codex / Claude / DeepSeek Harness）
+
+首次使用先在连接器目录初始化账号（token 从移动端「桥接」页复制）：
+
+```bash
+node bin/linco-connect.js init --token "<app-id>:<app-secret>" --agent codex --channel linco-demo --account default --ws-url "ws://<电脑IP>:3300/bridge/ws/codex" --allow-insecure-ws
+```
+
+**Codex 支持三种形态，全部不需要官方账号登录：**
+
+| 形态 | 说明 |
+| --- | --- |
+| Codex Desktop（商店版 / 独立安装版） | 连接器自动发现自带的 codex.exe，无需任何安装 |
+| codex CLI（PATH 上） | 直接使用 |
+| CC Switch 第三方 API | `~/.codex/config.toml` 指向第三方 provider 即可跑 turn 与全量任务列表 |
+
+DeepSeek Harness 装好后保持运行（默认网关 `127.0.0.1:3080`），连接器即接即用。
+
+### 第 3 步：安装移动端（安卓）
+
+双击 **`一键打包安装安卓开发版.bat`**：读取 `linco-bridge-platform/web/android.env` 里的服务器地址 → 构建 H5 → cap sync → 编译 Debug APK → `adb install` 到已连接的手机。
+
+前提：手机与电脑同一局域网；电脑 IP 变化后先改 `web/android.env` 的 `VITE_API_BASE_URL` 再重新打包。不想装 App 时也可用 H5 开发模式：
 
 ```bash
 cd linco-bridge-platform/web
@@ -105,49 +104,53 @@ npm install
 npm run dev:h5
 ```
 
-打开命令输出的 H5 地址，然后：
+### 中文脚本一览
 
-1. 打开 **桥接**，选择 **从 Codex 导入**。
-2. 复制页面生成的 `setupCommands` 并在本机执行。
-3. 返回页面刷新连接状态。
-4. 进入 Codex，通过文件夹菜单选择项目或会话，然后发送测试消息。
+| 脚本（仓库根目录） | 作用 |
+| --- | --- |
+| `一键启动电脑端服务.bat` | 启动服务器(3300) + 本机连接器，各占一个窗口 |
+| `一键打包安装安卓开发版.bat` | 构建 H5 → 编译 Debug APK → adb 安装到手机 |
 
-页面生成的命令为准。本地命令通常具有以下形态：
+## 📱 任务控制台（WorkBuddy 式）
+
+移动端「设备」Tab 点击设备卡片进入任务控制台：
+
+- **运行中**：实时显示电脑上正在执行的 Agent 任务（基于连接器 writer-lock 判定，跨 Codex Desktop / CLI / 连接器生效），10 秒轮询刷新；
+- **最近任务**：全量本地任务列表（不限工作目录），按更新时间排序；
+- **继续**：一键绑定原线程进入聊天页，流式输出、权限确认、模型/推理档位切换（列表来自电脑端当前配置，如 CC Switch 目录）全部可用。
+
+## 🌐 公网部署
+
+局域网内网可直连；要在任何网络下控制家里的电脑，把服务器部署到公网（VPS / 云主机）：
 
 ```bash
-linco-connect init \
-  --token "<app-id>:<app-secret>" \
-  --agent codex \
-  --channel linco-demo \
-  --account "<account-id>" \
-  --allow-insecure-ws
-
-linco-connect start --daemon
+# 在公网服务器上，于 linco-bridge-platform/server 目录执行：
+npm install
+npm run build
+PUBLIC_HOST=bridge.example.com PORT=3300 npm run start:prod
 ```
 
-完整本地流程见 [快速开始](docs/zh-CN/quick-start.md) 和 [参考平台 README](linco-bridge-platform/README.zh-CN.md)。
+关键配置与要求：
 
-### 3. 在线 Demo
+| 配置 | 说明 |
+| --- | --- |
+| `PUBLIC_HOST` | 对外域名或 IP。非回环地址时服务器会自动把生成的连接命令切换为 `wss://` + `https://` |
+| `PORT` | 监听端口，默认 3300 |
+| TLS | NestJS 自身是 HTTP，公网必须挂反向代理（nginx / caddy / 云负载均衡）终结 HTTPS/WSS 证书并转发到 3300 |
+| 连接器侧 | 电脑上 `linco-connect init` 用移动端「桥接」页生成的公网命令（自动带 `--ws-url wss://...`），不要再加 `--allow-insecure-ws` |
+| 移动端 | 打包前把 `web/android.env` 的 `VITE_API_BASE_URL` 改为公网地址（`https://bridge.example.com`）再执行打包脚本 |
 
-- H5：[https://bridge-demo.lincotalk.com](https://bridge-demo.lincotalk.com)
-- 微信小程序：搜索 `agent桥接器` 或扫描下方体验码。
-
-<p align="center">
-  <img src="docs/images/demo/mini-program-qr.png" alt="Linco Bridge 微信小程序体验码" width="220" />
-</p>
-
-打开 **桥接**，导入 Agent，在电脑上执行页面生成的 `setupCommands`，确认连接器在线后进入聊天页。
-
-在线 Demo 使用签名匿名访客 Session，不提供正式账号、持久跨设备恢复或生产级多租户保证。请勿输入敏感或正式业务数据。自定义前端请[自行部署参考平台](docs/zh-CN/deploy-demo.md)，不要调用官方 Demo API。
+即：**只有 `linco-bridge-platform/server` 这一个服务需要部署在公网**；连接器始终跑在你自己的电脑上，手机装 App 或直接浏览器访问公网地址。
 
 ## 🤖 兼容性
 
-| Agent | 状态 | 已验证版本 |
+| Agent | 状态 | 说明 |
 | --- | --- | --- |
-| Codex CLI | 支持 | `codex-cli 0.142.5` |
+| Codex（Desktop / CLI） | 支持 | Desktop 自带二进制自动发现，无需 CLI 与官方登录；已验证 `codex-cli 0.171.0` |
 | Claude Code | 支持 | `2.1.198 (Claude Code)` |
-| Hermes | 支持 | `Hermes Agent v0.13.0 (2026.5.7)` |
-| OpenClaw | 支持 | `OpenClaw 2026.5.18 (50a2481)` |
+| DeepSeek Harness | 支持 | 本地网关 `127.0.0.1:3080`，模型列表与运行状态直读 |
+| Hermes | 支持 | `Hermes Agent v0.13.0` |
+| OpenClaw | 支持 | `OpenClaw 2026.5.18` |
 
 使用 Node.js 20 或 22–26，推荐 Node.js 22 LTS。当前兼容边界见 [支持平台](docs/zh-CN/supported-platforms.md)。
 
@@ -160,14 +163,14 @@ linco-connect start --daemon
 | Reference Web SDK | `linco-bridge-platform/web/src/bridge/sdk` |
 | Channel adapter | `linco-bridge-connect/src/channel` |
 
-第三方集成应新增自定义 channel adapter，不要修改官方 `linco` 通道。详见 [二次开发规则](docs/zh-CN/secondary-development.md)。
+第三方集成应新增自定义 channel adapter。详见 [二次开发规则](docs/zh-CN/secondary-development.md)。
 
 ## 🔐 安全
 
 - 不要提交或记录 Token、App Secret、私钥、用户数据或带鉴权信息的 URL。
-- `ws://` 仅用于可信本地开发。公网部署应使用 HTTPS/WSS，并定义自己的鉴权、存储、审计和保留策略。
+- `ws://` 仅用于可信局域网。公网部署必须 HTTPS/WSS，并定义自己的鉴权、存储、审计和保留策略。
 - TLS/WSS 不等于端到端加密。
-- 文件下发必须继续拦截隐藏路径和敏感文件。
+- 文件下发默认拦截隐藏路径和敏感文件（`.env`、`.git/config`、`.ssh/*`）。
 - 连接真实数据前请阅读 [安全与隐私](docs/zh-CN/security-and-privacy.md)；漏洞请按 [SECURITY.md](SECURITY.md) 私密报告。
 
 ## 📚 文档
@@ -176,24 +179,9 @@ linco-connect start --daemon
 | --- | --- |
 | 快速上手 | [快速开始](docs/zh-CN/quick-start.md)、[安卓端构建与运行](docs/zh-CN/android.md)、[排障](docs/zh-CN/troubleshooting.md) |
 | 理解系统 | [工作原理](docs/zh-CN/how-it-works.md)、[公开协议](docs/zh-CN/protocol.md)、[CLI 命令参考](docs/zh-CN/cli.md) |
-| 部署或扩展 | [在线 Demo 部署](docs/zh-CN/deploy-demo.md)、[Reference Web](docs/zh-CN/reference-web.md)、[二次开发](docs/zh-CN/secondary-development.md) |
+| 部署或扩展 | [参考平台部署](docs/zh-CN/deploy-demo.md)、[Reference Web](docs/zh-CN/reference-web.md)、[二次开发](docs/zh-CN/secondary-development.md) |
 | 查看边界与政策 | [支持平台](docs/zh-CN/supported-platforms.md)、[安全与隐私](docs/zh-CN/security-and-privacy.md)、[支持边界](SUPPORT.md) |
 | 开发子项目 | [连接器 README](linco-bridge-connect/README.zh-CN.md)、[参考平台 README](linco-bridge-platform/README.zh-CN.md) |
-
-## 💬 社区与动态
-
-微信技术交流群用于讨论接入问题、产品反馈和 Agent 工作流：
-
-<img src="docs/images/community-wechat-group.jpg" alt="Linco technical WeChat group" width="320" />
-
-关注 **Linco Lab** 获取项目更新和实践内容：
-
-- [小红书](https://xhslink.com/m/7tdp7JOYViz)
-- 微信公众号：搜索 `Linco Lab`
-
-<img src="docs/images/linco-lab-wechat-official-account.jpg" alt="Linco Lab 微信公众号二维码" width="200" />
-
-微信二维码可能过期。最新入口和支持说明见 [社区页](COMMUNITY.zh-CN.md)。
 
 ## 🤝 参与贡献
 
@@ -202,4 +190,3 @@ linco-connect start --daemon
 ## ⚖️ 许可证
 
 Linco Bridge 基于 [MIT License](LICENSE) 开源。许可证适用于仓库代码和文档，不单独授予超出正常指代范围的 Linco 名称、Logo 或其他品牌资产使用权。
-

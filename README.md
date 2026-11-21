@@ -5,99 +5,99 @@
 <h1 align="center">Linco Bridge</h1>
 
 <p align="center">
-  An open bridge layer that connects AI Agent tools running on a personal computer
-  to web, H5, mini program, app, IM, and custom clients.
+  Bridge AI Agents running on your own computer (Codex / Claude / DeepSeek Harness /
+  Hermes / OpenClaw) to your phone: view tasks remotely, start / resume / stop them
+  anytime — agents always execute on your PC.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-open%20source%20alpha-0f766e" alt="status: open source alpha" />
-  <img src="https://img.shields.io/badge/agents-Codex%20%7C%20Claude%20%7C%20Hermes%20%7C%20OpenClaw-2563eb" alt="supported agents" />
-  <img src="https://img.shields.io/badge/channel-official%20%2B%20reference%20platform-f59e0b" alt="channel types" />
+  <img src="https://img.shields.io/badge/agents-Codex%20%7C%20Claude%20%7C%20DeepSeek%20%7C%20Hermes%20%7C%20OpenClaw-2563eb" alt="supported agents" />
+  <img src="https://img.shields.io/badge/mobile-Android%20APK%20%2B%20H5-f59e0b" alt="mobile: android apk + h5" />
   <img src="https://img.shields.io/badge/license-MIT-111827" alt="license: MIT" />
 </p>
 
 **Status:** Open Source Alpha. Interfaces and compatibility may change with documented migration notes.
 
-<p align="center">
-  <a href="https://testflight.apple.com/join/Ahm1encB">iOS App</a>
-  ·
-  <a href="https://www.lincotalk.com/download/apk/linco.apk">Android App</a>
-  ·
-  <a href="https://bridge-demo.lincotalk.com">Hosted Demo</a>
-  ·
-  <a href="https://www.bilibili.com/video/BV18Fgf6CEpC/">Watch Demo</a>
-  ·
-  <a href="docs/quick-start.md">Quick Start</a>
-  ·
-  <a href="README.zh-CN.md">简体中文</a>
-</p>
-
-![Linco Bridge hero preview](docs/images/demo/linco-bridge-hero.png)
-
 ## ✨ Highlights
 
-| Local-first | Agent-oriented interaction | Open extension surface |
+| Local-first | Task console | No official-account lock-in |
 | --- | --- | --- |
-| Keep Agent CLIs running on the user's computer while accessing sessions, attachments, and generated files from remote clients. | Present streaming output, permissions, tools, files, and long-running sessions in a dedicated client instead of a generic message relay. | Reuse the connector, protocol helpers, SDKs, and channel adapters to build a custom H5, mini program, app, web, or IM experience. |
+| Agent tasks keep running on your computer; the phone only views and controls, code and data never leave the machine. | WorkBuddy-style three layers: device card → task console (running / recent tasks) → streaming chat, with one-tap resume. | Codex works without an official account login: the connector auto-discovers the codex binary bundled with Codex Desktop, and third-party API setups (e.g. CC Switch) work end to end. No codex CLI required. |
 
-## 🧭 Overview
-
-Linco Bridge connects local Agent CLIs to remote clients without moving Agent execution away from the user's computer.
+## 🧭 Architecture
 
 ```text
-Local Agent CLI
-    ↕ local process, gateway, or session files
-linco-connect on the user's computer
-    ↕ authenticated WebSocket bridge
-Official Linco channel, open reference platform, or custom backend
-    ↕
-Linco App, Reference Web, or custom client
+Your computer
+ ├─ Codex Desktop (live tasks) / Claude / DeepSeek Harness
+ └─ linco-connect connector
+     ├─ auto-discovers the codex.exe bundled with Codex Desktop, spawns app-server
+     ├─ reads local ~/.codex / ~/.claude session data
+     └─ full task list (/sessions --all) + running status
+        ↕ authenticated WebSocket (token = appId:appSecret)
+Server (NestJS, default port 3300, SQLite)
+ ├─ REST + SSE relay, anonymous visitor sessions
+ └─ GET /api/agent-bridges/:type/threads  ← task console data source
+        ↕ REST + SSE
+Mobile (Vue 3 + Capacitor Android app / H5)
+ └─ Messages / Devices (task console) / Bridge tabs + streaming chat
 ```
 
 | Repository area | Purpose |
 | --- | --- |
-| `linco-bridge-connect` | Local connector for Agent CLIs, sessions, permissions, attachments, and generated files. |
-| `linco-bridge-platform` | NestJS + Vue 3/Capacitor reference implementation for the open `linco-demo` channel. |
-| `docs` | Setup, architecture, protocol, security, compatibility, and extension guides. |
+| `linco-bridge-connect` | Local connector: agent CLIs/Desktop adapters, sessions, permissions, attachments, model lists, running status. |
+| `linco-bridge-platform/server` | NestJS server: device & task relay, session storage, task console API. |
+| `linco-bridge-platform/web` | Mobile app: Vue 3 + Capacitor Android (packagable APK), H5 dev mode. |
+| `docs` | Architecture, protocol, security, compatibility and extension guides. |
 
-The repository does not include the complete Linco App or the official hosted cloud-service implementation.
+## 🚀 Quick Start (Windows, three steps)
 
-## 🚀 Choose a Path
+### Step 1: Start the desktop services
 
-| Path | Best for | Requirement |
-| --- | --- | --- |
-| Linco App | Users who want the official product experience | Install the app and run the page-generated connector commands. |
-| Open reference platform | Local validation, self-hosting evaluation, and secondary development | Run `linco-bridge-platform/server` and `linco-bridge-platform/web`. |
-| Hosted demo | Quick public evaluation without deploying the platform | Open the hosted H5 or mini program and run the generated connector commands locally. |
+Double-click **`一键启动电脑端服务.bat`** in the repository root. It opens two windows:
 
-### 1. Linco App
+| Window | Content |
+| --- | --- |
+| Linco server (3300) | REST + WebSocket relay on `http://127.0.0.1:3300` |
+| Linco connector | Reads `%USERPROFILE%\.linco\config.json`, bridges local agents to the server |
 
-Download Linco App:
-
-- [iOS TestFlight](https://testflight.apple.com/join/Ahm1encB)
-- [Android APK](https://www.lincotalk.com/download/apk/linco.apk)
-
-Open **Bridge**, choose an Agent import path, and run the generated commands on the computer where the Agent CLI is installed. A typical command shape is:
+Manual alternative:
 
 ```bash
-npm install -g linco-connect
-linco-connect init --token "<app-id>:<app-secret>" --agent codex
-linco-connect start --daemon
-```
-
-Return to the app, confirm the connector is online, and send a test message.
-
-### 2. Open Reference Platform
-
-Start the backend:
-
-```bash
+# Terminal 1: server
 cd linco-bridge-platform/server
 npm install
 npm run start:dev
+
+# Terminal 2: connector
+cd linco-bridge-connect
+npm install
+node bin/linco-connect.js start
 ```
 
-Start the H5 frontend in another terminal:
+### Step 2: Connect an agent (Codex / Claude / DeepSeek Harness)
+
+Initialize an account first (copy the token from the mobile "Bridge" page):
+
+```bash
+node bin/linco-connect.js init --token "<app-id>:<app-secret>" --agent codex --channel linco-demo --account default --ws-url "ws://<PC-IP>:3300/bridge/ws/codex" --allow-insecure-ws
+```
+
+**Codex works in three forms, none requiring an official account login:**
+
+| Form | Notes |
+| --- | --- |
+| Codex Desktop (store / standalone) | the bundled codex binary is auto-discovered, nothing to install |
+| codex CLI on PATH | used directly |
+| Third-party API via CC Switch | point `~/.codex/config.toml` at your provider; turns and task lists work |
+
+DeepSeek Harness just needs to be running (default gateway `127.0.0.1:3080`).
+
+### Step 3: Install the mobile app (Android)
+
+Double-click **`一键打包安装安卓开发版.bat`**: it reads the server address from `linco-bridge-platform/web/android.env`, builds H5, syncs via Capacitor, compiles the debug APK and installs it over adb.
+
+Prerequisite: phone and PC on the same LAN. When the PC IP changes, update `VITE_API_BASE_URL` in `web/android.env` and rerun. H5 dev mode alternative:
 
 ```bash
 cd linco-bridge-platform/web
@@ -105,101 +105,89 @@ npm install
 npm run dev:h5
 ```
 
-Open the printed H5 URL, then:
+### Helper scripts (repository root, Chinese names)
 
-1. Open **Bridge** and select **Import from Codex**.
-2. Copy the generated `setupCommands` and run them locally.
-3. Return to the page and refresh the connection status.
-4. Enter Codex, select a project or session from the folder menu, and send a test message.
+| Script | Purpose |
+| --- | --- |
+| `一键启动电脑端服务.bat` | Start server (3300) + local connector, one window each |
+| `一键打包安装安卓开发版.bat` | Build H5 → compile debug APK → adb install |
 
-The generated commands are the source of truth. A local command usually has this shape:
+## 📱 Task console (WorkBuddy style)
+
+Tap a device card on the mobile "Devices" tab to open its task console:
+
+- **Running**: live tasks currently executing on the PC (writer-lock based, effective across Codex Desktop / CLI / connector), 10s polling;
+- **Recent**: full local task list regardless of workspace, sorted by recency;
+- **Resume**: one tap binds the original thread and opens the chat page — streaming output, permission prompts, model/reasoning pickers (sourced from the PC configuration, e.g. the CC Switch catalog) all work.
+
+## 🌐 Public deployment
+
+Direct LAN connections work out of the box. To control your home computer from anywhere, deploy the server to a public host (VPS / cloud):
 
 ```bash
-linco-connect init \
-  --token "<app-id>:<app-secret>" \
-  --agent codex \
-  --channel linco-demo \
-  --account "<account-id>" \
-  --allow-insecure-ws
-
-linco-connect start --daemon
+# On the public server, inside linco-bridge-platform/server:
+npm install
+npm run build
+PUBLIC_HOST=bridge.example.com PORT=3300 npm run start:prod
 ```
 
-See [Quick Start](docs/quick-start.md) and the [Platform README](linco-bridge-platform/README.md) for the complete local flow.
+Key settings and requirements:
 
-### 3. Hosted Demo
+| Item | Notes |
+| --- | --- |
+| `PUBLIC_HOST` | Public domain or IP. Non-loopback hosts automatically switch generated commands to `wss://` + `https://` |
+| `PORT` | Listen port, default 3300 |
+| TLS | NestJS itself is HTTP; terminate HTTPS/WSS at a reverse proxy (nginx / caddy / cloud LB) forwarding to 3300 |
+| Connector | On the PC use the public command generated by the mobile "Bridge" page (it embeds `--ws-url wss://...`); drop `--allow-insecure-ws` |
+| Mobile | Set `VITE_API_BASE_URL` in `web/android.env` to the public address before packaging |
 
-- H5: [https://bridge-demo.lincotalk.com](https://bridge-demo.lincotalk.com)
-- WeChat Mini Program: search `agent桥接器` or scan the QR code below.
-
-<p align="center">
-  <img src="docs/images/demo/mini-program-qr.png" alt="Linco Bridge WeChat Mini Program QR code" width="220" />
-</p>
-
-Open **Bridge**, import an Agent, run the generated `setupCommands` on your computer, confirm the connector is online, and enter the chat page.
-
-The hosted demo uses signed anonymous visitor sessions. It does not provide a formal account, durable cross-device recovery, or production-grade multi-tenant guarantees. Do not enter sensitive or production data. Custom frontends must [self-host the platform](docs/deploy-demo.md) instead of calling the official demo API.
+In short: **only `linco-bridge-platform/server` needs a public deployment**; the connector always runs on your own computer, and the phone uses the app or any browser pointed at the public address.
 
 ## 🤖 Compatibility
 
-| Agent | Status | Verified version |
+| Agent | Status | Notes |
 | --- | --- | --- |
-| Codex CLI | Supported | `codex-cli 0.142.5` |
-| Claude Code | Supported | `2.1.198 (Claude Code)` |
-| Hermes | Supported | `Hermes Agent v0.13.0 (2026.5.7)` |
-| OpenClaw | Supported | `OpenClaw 2026.5.18 (50a2481)` |
+| Codex (Desktop / CLI) | supported | Desktop-bundled binary auto-discovered, no CLI or official login needed; verified with `codex-cli 0.171.0` |
+| Claude Code | supported | `2.1.198 (Claude Code)` |
+| DeepSeek Harness | supported | local gateway `127.0.0.1:3080`, model list and running status read directly |
+| Hermes | supported | `Hermes Agent v0.13.0` |
+| OpenClaw | supported | `OpenClaw 2026.5.18` |
 
-Use Node.js 20 or 22–26; Node.js 22 LTS is recommended. See [Supported Platforms](docs/supported-platforms.md) for the current compatibility boundary.
+Node.js 20 or 22–26; Node.js 22 LTS recommended. See [supported platforms](docs/supported-platforms.md).
 
-## 🧩 Extension Points
+## 🧩 Extension points
 
 | Area | Location |
 | --- | --- |
 | Connector SDK | `linco-bridge-connect/src/package/connector` |
 | Protocol helpers | `linco-bridge-connect/src/package/protocol` |
-| Reference Web SDKs | `linco-bridge-platform/web/src/bridge/sdk` |
-| Channel adapters | `linco-bridge-connect/src/channel` |
+| Reference Web SDK | `linco-bridge-platform/web/src/bridge/sdk` |
+| Channel adapter | `linco-bridge-connect/src/channel` |
 
-Third-party integrations should add a custom channel adapter rather than changing the official `linco` channel. See [Secondary Development Rules](docs/secondary-development.md).
+Third-party integrations should add a custom channel adapter. See [secondary development rules](docs/secondary-development.md).
 
 ## 🔐 Security
 
-- Never commit or log tokens, App Secrets, private keys, user data, or authenticated URLs.
-- Use `ws://` only for trusted local development. Public deployments should use HTTPS/WSS and define their own authentication, storage, audit, and retention policies.
-- TLS/WSS does not by itself provide end-to-end encryption.
-- File delivery must keep hidden and sensitive paths blocked.
-- Read [Security and Privacy](docs/security-and-privacy.md) before connecting real data. Report vulnerabilities through [SECURITY.md](SECURITY.md).
+- Never commit or log tokens, app secrets, private keys, user data, or authenticated URLs.
+- `ws://` is for trusted LANs only. Public deployments must use HTTPS/WSS and define their own auth, storage, audit and retention policies.
+- TLS/WSS is not end-to-end encryption.
+- File delivery blocks hidden paths and sensitive files (`.env`, `.git/config`, `.ssh/*`) by default.
+- Review [security & privacy](docs/security-and-privacy.md) before connecting real data; report vulnerabilities per [SECURITY.md](SECURITY.md).
 
-## 📚 Documentation
+## 📚 Docs
 
-| Goal | Documentation |
+| Goal | Docs |
 | --- | --- |
-| Get started | [Quick Start](docs/quick-start.md), [Troubleshooting](docs/troubleshooting.md) |
-| Understand the system | [How It Works](docs/how-it-works.md), [Protocol](docs/protocol.md), [CLI Reference](docs/cli.md) |
-| Run or extend the platform | [Hosted Deployment](docs/deploy-demo.md), [Reference Web](docs/reference-web.md), [Secondary Development](docs/secondary-development.md) |
-| Review scope and policy | [Supported Platforms](docs/supported-platforms.md), [Security and Privacy](docs/security-and-privacy.md), [Support](SUPPORT.md) |
-| Work on a subproject | [Connector README](linco-bridge-connect/README.en-US.md), [Platform README](linco-bridge-platform/README.md) |
-
-## 💬 Community
-
-Join the WeChat technical group for integration questions, product feedback, and Agent workflow discussions:
-
-<img src="docs/images/community-wechat-group.jpg" alt="Linco technical WeChat group" width="320" />
-
-Follow **Linco Lab** for project updates and implementation notes:
-
-- [Xiaohongshu](https://xhslink.com/m/7tdp7JOYViz)
-- WeChat Official Account: search `Linco Lab`
-
-<img src="docs/images/linco-lab-wechat-official-account.jpg" alt="Linco Lab WeChat Official Account QR code" width="200" />
-
-WeChat QR codes may expire. See [Community](COMMUNITY.md) for the latest entries and support guidance.
+| Get started | [Quick start](docs/quick-start.md), [Android build & run](docs/zh-CN/android.md), [Troubleshooting](docs/troubleshooting.md) |
+| Understand | [How it works](docs/how-it-works.md), [Protocol](docs/protocol.md), [CLI reference](docs/cli.md) |
+| Deploy or extend | [Reference platform deploy](docs/deploy-demo.md), [Reference web](docs/reference-web.md), [Secondary development](docs/secondary-development.md) |
+| Boundaries & policies | [Supported platforms](docs/supported-platforms.md), [Security & privacy](docs/security-and-privacy.md), [Support scope](SUPPORT.md) |
+| Subprojects | [Connector README](linco-bridge-connect/README.md), [Platform README](linco-bridge-platform/README.md) |
 
 ## 🤝 Contributing
 
-Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing protocol, cross-module, or breaking changes.
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before protocol, cross-module, or breaking changes.
 
 ## ⚖️ License
 
-Linco Bridge is licensed under the [MIT License](LICENSE). The license applies to repository code and documentation; it does not grant separate rights to use Linco names, logos, or other brand assets beyond normal nominative reference.
-
+Linco Bridge is open source under the [MIT License](LICENSE). The license covers repository code and docs; it does not grant rights to the Linco name, logo, or other brand assets beyond normal reference use.
