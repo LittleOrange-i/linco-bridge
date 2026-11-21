@@ -19,6 +19,10 @@
 
 **Status:** Open Source Alpha. Interfaces and compatibility may change with documented migration notes.
 
+<p align="center">
+  <a href="README.md">简体中文</a> · <b>English</b>
+</p>
+
 ## ✨ Highlights
 
 | Local-first | Task console | No official-account lock-in |
@@ -111,6 +115,8 @@ npm run dev:h5
 | --- | --- |
 | `一键启动电脑端服务.bat` | Start server (3300) + local connector, one window each |
 | `一键打包安装安卓开发版.bat` | Build H5 → compile debug APK → adb install |
+
+> Implementation lives in `scripts-windows/` (`start-desktop-services.ps1`, `package-android-dev.ps1`, UTF-8 BOM). The Chinese-named `.bat` files are pure-ASCII entry points, so they work under any console code page (GBK/UTF-8) without mojibake or line-splitting issues.
 
 ## 📱 Task console (WorkBuddy style)
 

@@ -18,6 +18,10 @@
 
 **项目状态：** Open Source Alpha。接口和兼容性可能变化，破坏性变更将配套迁移说明。
 
+<p align="center">
+  <b>简体中文</b> · <a href="README.en.md">English</a>
+</p>
+
 ## ✨ 亮点
 
 | 本地优先 | 任务控制台 | 无官方账号依赖 |
@@ -110,6 +114,8 @@ npm run dev:h5
 | --- | --- |
 | `一键启动电脑端服务.bat` | 启动服务器(3300) + 本机连接器，各占一个窗口 |
 | `一键打包安装安卓开发版.bat` | 构建 H5 → 编译 Debug APK → adb 安装到手机 |
+
+> 实现位于 `scripts-windows/`（`start-desktop-services.ps1`、`package-android-dev.ps1`，UTF-8 BOM）；中文名 `.bat` 只是纯 ASCII 入口，任何终端代码页（GBK/UTF-8）下都不会出现中文乱码或命令拆行问题。
 
 ## 📱 任务控制台（WorkBuddy 式）
 
