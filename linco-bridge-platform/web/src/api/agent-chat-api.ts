@@ -72,6 +72,8 @@ export function createRestAgentChatSdk(): AgentChatSdk {
           tempSession: input.tempSession,
           title: input.title,
           connectionId: input.connectionId,
+          agentSessionId: input.agentSessionId,
+          projectPath: input.projectPath,
           bridgeSettings: input.bridgeSettings,
         },
       )

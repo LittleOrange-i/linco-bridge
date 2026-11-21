@@ -61,6 +61,15 @@ function handleSessions(rawArg, ws, session, options = {}) {
     return;
   }
 
+  // --all：全量任务列表（不限工作目录），供移动端任务控制台使用
+  if (parsed.all) {
+    if (agentType === 'codex' || agentType === 'deepseek') {
+      return sendProviderAllThreads(ws, session, options.config, agentType, { limit: parsed.limit });
+    }
+    sendError(ws, '/sessions --all 目前只支持 Codex 和 DeepSeek 模式。');
+    return;
+  }
+
   const workspace = resolveSlashProjectWorkspace(parsed.projectPath, session.workspace);
   if (!isReadableDirectory(workspace)) {
     sendError(ws, `当前工作目录不可访问: ${workspace}`);
@@ -91,6 +100,21 @@ function handleSessions(rawArg, ws, session, options = {}) {
 
   const actions = buildBindActions(sessions, parsed.projectPath ? workspace : '');
   sendSlashCommandResult(ws, 'sessions', buildSessionsPayload(agentType, workspace, sessions, actions, parsed.limit));
+}
+
+// 全量任务列表：走 provider 的 listAllThreads，不经过工作目录校验。
+async function sendProviderAllThreads(ws, session, config, agentType, options) {
+  try {
+    const sessions = await agentRunner().listAgentAllThreads(session, config, options);
+    sendSlashCommandResult(
+      ws,
+      'sessions',
+      buildSessionsPayload(agentType, '', sessions, [], options.limit, { allThreads: true }),
+    );
+  } catch (err) {
+    const label = agentType === 'deepseek' ? 'DeepSeek Harness' : 'Codex';
+    sendError(ws, `无法读取 ${label} 任务列表: ${err.message}`);
+  }
 }
 
 async function sendProviderProjectSessions(ws, session, config, agentType, options) {
@@ -137,8 +161,9 @@ function handleBind(rawArg, ws, session, options = {}) {
     return;
   }
 
-  if (sessionIdentityLocked(session)) {
-    rejectLockedIdentityChange(ws);
+  // 绑定期间禁止换绑，避免与进行中的 turn 竞争写入。
+  if (session.isTurnActive) {
+    sendError(ws, '当前会话正在处理消息，请稍后再绑定。');
     return;
   }
 
@@ -151,6 +176,10 @@ function handleBind(rawArg, ws, session, options = {}) {
   if (parsed.chatId) {
     if (agentType !== 'codex') {
       sendError(ws, '/bind --chat only supports Codex mode.');
+      return;
+    }
+    if (sessionIdentityLocked(session)) {
+      rejectLockedIdentityChange(ws);
       return;
     }
     const matched = findCodexProjectlessChatById(options.homeDir || os.homedir(), parsed.chatId);
@@ -180,11 +209,18 @@ function handleBind(rawArg, ws, session, options = {}) {
   }
 
   if (agentType === 'deepseek' || agentType === 'codex') {
+    // codex/deepseek 的绑定由平台（resume/任务控制台）与用户显式管理，
+    // 允许对已绑定线程的会话重绑到其它线程；本地进程类会话仍受身份锁保护。
     return bindProviderProjectSession(ws, session, options.config, agentType, {
       workspace,
       sessionId: targetId,
       projectId: parsed.projectId,
     });
+  }
+
+  if (sessionIdentityLocked(session)) {
+    rejectLockedIdentityChange(ws);
+    return;
   }
 
   const matched = findLocalProjectSessionById({

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
@@ -97,7 +98,88 @@ function findGitBash(userConfig = {}) {
   return null;
 }
 
+// 从 ~/.codex/config.toml 的 notify 数组反推 Codex Desktop（MSIX）包根目录。
+// WindowsApps 父目录无法列举（EPERM），但 notify 路径里带有完整包路径可直接反解。
+function codexPackageRootFromNotifyConfig() {
+  try {
+    const configToml = fs.readFileSync(path.join(os.homedir(), '.codex', 'config.toml'), 'utf8');
+    const notifyMatch = configToml.match(/notify\s*=\s*\[\s*"([^"]*OpenAI\.Codex_[^"]*)"/i)
+      || configToml.match(/notify\s*=\s*\[\s*'([^']*OpenAI\.Codex_[^']*)'/i);
+    if (!notifyMatch) return null;
+    const notifyPath = notifyMatch[1].replace(/\\+/g, '\\');
+    const packageMatch = notifyPath.match(/^(.*?OpenAI\.Codex_[^\\]+)/i);
+    return packageMatch ? packageMatch[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+// Get-AppxPackage 查询 Codex Desktop 安装目录（需要子进程，较慢，仅作兜底）。
+function codexPackageRootFromAppx() {
+  if (process.platform !== 'win32') return null;
+  try {
+    const installLocation = execFileSync('powershell.exe', [
+      '-NoProfile', '-Command',
+      "(Get-AppxPackage -Name 'OpenAI.Codex*' | Select-Object -First 1).InstallLocation",
+    ], {
+      timeout: 20000,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      windowsHide: true,
+    }).trim();
+    return installLocation || null;
+  } catch {
+    return null;
+  }
+}
+
+// Codex Desktop 自带 codex 二进制的候选路径（按发现成本从低到高排列）。
+function codexBundledBinaryCandidates() {
+  if (process.platform === 'win32') {
+    const candidates = [];
+    const localAppData = process.env.LOCALAPPDATA;
+    // 1) 独立安装版（非商店版）：%LOCALAPPDATA%\Programs\Codex
+    if (localAppData) {
+      candidates.push(path.join(localAppData, 'Programs', 'Codex', 'codex.exe'));
+    }
+    // 2) 商店版（MSIX）：notify 配置反推 + Get-AppxPackage 兜底
+    const packageRoots = [
+      codexPackageRootFromNotifyConfig(),
+      codexPackageRootFromAppx(),
+    ].filter(Boolean);
+    for (const packageRoot of packageRoots) {
+      candidates.push(path.join(packageRoot, 'app', 'resources', 'codex.exe'));
+    }
+    return candidates;
+  }
+  if (process.platform === 'darwin') {
+    const applications = [
+      '/Applications/Codex.app',
+      path.join(os.homedir(), 'Applications', 'Codex.app'),
+    ];
+    return applications.flatMap(appRoot => [
+      path.join(appRoot, 'Contents', 'Resources', 'app.asar.unpacked', 'resources', 'codex'),
+      path.join(appRoot, 'Contents', 'Resources', 'codex'),
+      path.join(appRoot, 'Contents', 'MacOS', 'codex'),
+    ]);
+  }
+  return [];
+}
+
+// 发现 Codex Desktop 自带 codex 二进制；用户无需单独安装 codex CLI。找不到返回 null。
+function findCodexBundledBinary() {
+  for (const candidate of codexBundledBinaryCandidates()) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {
+      // 无权限探测的候选直接跳过
+    }
+  }
+  return null;
+}
+
 module.exports = {
+  findCodexBundledBinary,
   findGitBash,
   resolveCommand,
 };

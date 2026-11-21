@@ -52,10 +52,15 @@ export interface SessionsItemPayload {
   firstMessage?: string
   bindCommand?: string
   workspace?: string
+  updatedAt?: number
+  running?: boolean
+  source?: string
 }
 
 export interface SessionsPayload {
   workspace?: string
+  /** all-threads：全量任务列表；workspace：按工作目录过滤 */
+  scope?: string
   items?: SessionsItemPayload[]
 }
 
@@ -87,6 +92,11 @@ export function buildSessionsCommand(projectPath?: string | null, limit = 10): s
     return `/sessions --project ${quoteBridgeCommandArg(normalized)} ${limit}`
   }
   return `/sessions ${limit}`
+}
+
+/** 全量任务列表命令（不限工作目录）：对应连接器 /sessions --all，供任务控制台使用。 */
+export function buildAllThreadsCommand(limit = 50): string {
+  return `/sessions --all ${limit}`
 }
 
 export function buildSelectProjectCommand(projectPath: string): string {

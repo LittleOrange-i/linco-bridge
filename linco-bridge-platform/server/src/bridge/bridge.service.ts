@@ -8,6 +8,7 @@ import {
   resolveConnectionDisplayName,
 } from '../shared/constants'
 import {
+  buildAllThreadsCommand,
   buildSessionsCommand,
   buildBindCommand,
   buildSelectProjectCommand,
@@ -996,8 +997,43 @@ export class BridgeService {
           id,
           title,
           bindCommand,
+          updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : 0,
+          running: item.running === true,
+          workspace: typeof item.workspace === 'string' ? item.workspace.trim() : '',
+          source: typeof item.source === 'string' ? item.source.trim() : '',
         }
       })
+  }
+
+  /**
+   * 全量任务列表（不限工作目录）：向连接器发 /sessions --all，供移动端任务控制台。
+   * runningOnly=true 时只返回运行中的任务。
+   */
+  async listAllThreads(
+    type: string,
+    connectionId: string | undefined,
+    limit = 50,
+    runningOnly = false,
+  ): Promise<BridgeWorkspaceSessionDto[]> {
+    if (!isAgentBridgeType(type)) {
+      throw new NotFoundException('不支持的 Agent 类型')
+    }
+    const connection = this.resolveConnection(type, connectionId)
+    if (!CONNECTOR_CONTEXT_TYPES.has(type)) {
+      return []
+    }
+    const platformSessionId = this.ensureConnectorSessionId(connection, connection.bridge_type)
+    const command = buildAllThreadsCommand(limit)
+    const { completed } = this.relay.forwardSlashCommand(
+      (payload) => this.presence.sendJson(connection.id, payload),
+      this.connectorInput(connection, platformSessionId),
+      command,
+      'sessions',
+    )
+    const payload = parseSessionsPayload(await completed)
+    const items = Array.isArray(payload?.items) ? payload.items : []
+    const mapped = this.mapWorkspaceSessions(items, '')
+    return runningOnly ? mapped.filter((item) => item.running === true) : mapped
   }
 
   private async fetchContextsFromConnector(connection: BridgeConnectionRow): Promise<BindableContextDto[]> {

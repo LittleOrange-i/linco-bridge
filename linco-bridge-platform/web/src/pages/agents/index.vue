@@ -18,7 +18,8 @@ import { connectedAgentToBridgeCard } from '@/utils/connected-accounts'
 
 import { showToast } from '@/utils/format'
 
-import { openConnectedAgent } from '@/utils/open-connected-agent'
+import { navigateOnce } from '@/utils/navigate-once'
+import { appendQueryToPath, createQueryParams } from '@/utils/query-string'
 
 import { getCustomNavPagePaddingStyle } from '@/utils/page-safe-area'
 import { isH5Runtime } from '@/utils/platform-runtime'
@@ -91,7 +92,18 @@ function handleItemTap(item: ConnectedAgentItem) {
   if (openedSwipeId.value) {
     openedSwipeId.value = null
   }
-  openConnectedAgent(item)
+  openDeviceConsole(item)
+}
+
+// 点击设备卡片进入任务控制台：查看运行中/最近任务并可远程继续
+function openDeviceConsole(item: ConnectedAgentItem) {
+  const params = createQueryParams({
+    agentType: item.agentType,
+    connectionId: item.connectionId,
+    deviceName: item.deviceName || item.title || '',
+    avatar: item.avatar || '',
+  })
+  navigateOnce(appendQueryToPath('/pages/device/console', params))
 }
 
 function handleSwipeOpen(connectionId: string) {

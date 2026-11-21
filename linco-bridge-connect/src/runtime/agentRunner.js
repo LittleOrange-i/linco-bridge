@@ -63,6 +63,11 @@ function listAgentProjectSessions(session, config, options = {}) {
   return providerFor(session).listProjectSessions?.(session, config, options) || Promise.resolve([]);
 }
 
+// 全量任务列表（不限工作目录）：供移动端任务控制台 / /sessions --all 使用。
+function listAgentAllThreads(session, config, options = {}) {
+  return providerFor(session).listAllThreads?.(session, config, options) || Promise.resolve([]);
+}
+
 function findAgentProjectSession(session, config, options = {}) {
   return providerFor(session).findProjectSession?.(session, config, options) || Promise.resolve(null);
 }
@@ -76,6 +81,7 @@ module.exports = {
   compactAgentContext,
   executeAgentQuery,
   findAgentProjectSession,
+  listAgentAllThreads,
   listAgentProjectSessions,
   listAgentProjects,
   readAgentSessionHistory,

@@ -175,6 +175,12 @@ export class ChatController {
       temp_session?: boolean
       title?: string
       connectionId?: string
+      /** 绑定已有本地任务（线程）：任务控制台「继续」入口使用 */
+      agentSessionId?: string
+      agent_session_id?: string
+      /** 绑定任务的工作目录 */
+      projectPath?: string
+      project_path?: string
       bridgeSettings?: {
         reasoningEffort?: string
         modelId?: string
@@ -199,6 +205,8 @@ export class ChatController {
         tempSession: body.tempSession ?? body.temp_session,
         title: body.title,
         connectionId: body.connectionId,
+        agentSessionId: body.agentSessionId ?? body.agent_session_id,
+        projectPath: body.projectPath ?? body.project_path,
         bridgeSettings,
       }),
     )

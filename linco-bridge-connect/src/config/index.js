@@ -1,4 +1,4 @@
-﻿const { findGitBash, resolveCommand } = require('./commandResolution');
+﻿const { findCodexBundledBinary, findGitBash, resolveCommand } = require('./commandResolution');
 const { loadConfig, parseToken } = require('./env');
 const {
   ensureDir,
@@ -40,6 +40,7 @@ module.exports = {
   OFFICIAL_LINCO_AGENT_WS_URLS,
   OFFICIAL_LINCO_WS_BASE_URL,
   ensureDir,
+  findCodexBundledBinary,
   findGitBash,
   getConfigDir,
   getConfigFile,

@@ -15,6 +15,15 @@ const {
 } = require('../gateway/openclawGateway');
 const { commandExists, safeUrlForDisplay } = require('./utils');
 
+// 标注 codex 二进制来源：PATH 上的 CLI 或 Codex Desktop 自带（无 CLI 也可用）。
+function describeCodexBinSource(bin) {
+  const text = String(bin || '');
+  if (/WindowsApps[\\/].*OpenAI\.Codex_/i.test(text)) return 'Codex Desktop 自带（商店版）';
+  if (/[\\/]Programs[\\/]Codex[\\/]/i.test(text)) return 'Codex Desktop 自带（独立安装版）';
+  if (/[\\/]Codex\.app[\\/]/i.test(text)) return 'Codex Desktop 自带（macOS）';
+  return 'PATH 上的 codex CLI';
+}
+
 async function doctorCommand(context = {}) {
   const rootDir = context.rootDir;
   const checks = [];
@@ -64,6 +73,7 @@ async function doctorCommand(context = {}) {
       checks.push([`${agentType} CLI`, !agent.enabled || (path.isAbsolute(agent.bin) ? fs.existsSync(agent.bin) : commandExists(agent.bin)), agent.bin]);
       if (agentType === 'codex') {
         checks.push([`${agentType} Network`, true, agent.networkAccess === false ? 'disabled' : 'enabled']);
+        checks.push([`${agentType} 二进制来源`, true, describeCodexBinSource(agent.bin)]);
       }
     }
   }

@@ -17,6 +17,10 @@ const routes: RouteRecordRaw[] = [
   { path: '/pages/chat/index', component: () => import('@/pages/chat/index.vue') },
   { path: '/pages/chat/history', component: () => import('@/pages/chat/history.vue') },
   { path: '/pages/chat/bot-config', component: () => import('@/pages/chat/bot-config.vue') },
+  {
+    path: '/pages/device/console',
+    component: () => import('@/pages/device/console.vue'),
+  },
   { path: '/:pathMatch(.*)*', redirect: '/pages/messages/index' },
 ]
 

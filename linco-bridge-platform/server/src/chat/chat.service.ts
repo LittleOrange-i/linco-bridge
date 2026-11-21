@@ -154,6 +154,10 @@ export interface CreateSessionInput {
   tempSession?: boolean
   message?: string
   connectionId?: string
+  /** 绑定到已有本地任务（线程）：任务控制台「继续」入口使用 */
+  agentSessionId?: string
+  /** 绑定任务的工作目录 */
+  projectPath?: string
   bridgeSettings?: {
     reasoningEffort?: string
     modelId?: string
@@ -688,6 +692,9 @@ export class ChatService {
       agentType: input.agentType,
       title,
       bridgeConnectionId: connection?.id ?? null,
+      // 绑定已有本地任务：发送消息时 chat.service 会基于该绑定自动 /bind 恢复线程
+      bridgeAgentSessionId: input.agentSessionId?.trim() || null,
+      bridgeProjectPath: input.projectPath?.trim() || null,
       lastMessage: '',
       isTempSession: input.tempSession ?? false,
       bridgeSettingsJson,

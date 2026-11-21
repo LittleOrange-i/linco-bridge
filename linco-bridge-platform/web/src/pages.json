@@ -65,6 +65,14 @@
         "navigationStyle": "custom",
         "backgroundColor": "#f5f5f5"
       }
+    },
+    {
+      "path": "pages/device/console",
+      "style": {
+        "navigationBarTitleText": "任务控制台",
+        "navigationStyle": "custom",
+        "backgroundColor": "#f5f6f7"
+      }
     }
   ],
   "globalStyle": {

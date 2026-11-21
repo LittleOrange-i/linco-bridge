@@ -267,6 +267,10 @@ export interface StartConversationInput {
   tempSession?: boolean
   title?: string
   connectionId?: string
+  /** 绑定已有本地任务（线程）：任务控制台「继续」入口使用 */
+  agentSessionId?: string
+  /** 绑定任务的工作目录 */
+  projectPath?: string
   bridgeSettings?: BridgeSessionSettings
 }
 

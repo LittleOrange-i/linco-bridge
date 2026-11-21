@@ -164,6 +164,27 @@ export class BridgeController {
     )
   }
 
+  /** 全量任务列表（不限工作目录）：移动端任务控制台数据源。runningOnly=1 时只返回运行中任务。 */
+  @Get(':type/threads')
+  async listThreads(
+    @Param('type') type: string,
+    @Query('connectionId') connectionId?: string,
+    @Query('connection_id') snakeConnectionId?: string,
+    @Query('limit') limitRaw?: string,
+    @Query('runningOnly') runningOnlyRaw?: string,
+  ) {
+    const limit = limitRaw ? Number.parseInt(limitRaw, 10) : 50
+    const runningOnly = runningOnlyRaw === '1' || runningOnlyRaw?.toLowerCase() === 'true'
+    return ok(
+      await this.bridgeService.listAllThreads(
+        type,
+        (connectionId ?? snakeConnectionId)?.trim(),
+        Number.isFinite(limit) && limit > 0 ? limit : 50,
+        runningOnly,
+      ),
+    )
+  }
+
   @Post(':type/workspace/apply')
   async applyWorkspace(
     @Param('type') type: string,

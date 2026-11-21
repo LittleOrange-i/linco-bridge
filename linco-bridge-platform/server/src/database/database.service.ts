@@ -417,22 +417,27 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       deviceName?: string | null
     },
   ): void {
-    const now = Date.now()
+    // undefined = 不修改该列（保留原值）；null = 显式清空。
+    const sets: string[] = []
+    const params: Array<string | number | null> = []
+    if (input.projectPath !== undefined) {
+      sets.push('bridge_project_path = ?')
+      params.push(input.projectPath ?? null)
+    }
+    if (input.agentSessionId !== undefined) {
+      sets.push('bridge_agent_session_id = ?')
+      params.push(input.agentSessionId ?? null)
+    }
+    if (input.deviceName !== undefined) {
+      sets.push('bridge_device_name = COALESCE(?, bridge_device_name)')
+      params.push(input.deviceName?.trim() || null)
+    }
+    if (sets.length === 0) return
+    sets.push('update_time = ?')
+    params.push(Date.now(), sessionId)
     this.db
-      .prepare(
-        `UPDATE chat_sessions
-         SET bridge_project_path = ?, bridge_agent_session_id = ?,
-             bridge_device_name = COALESCE(?, bridge_device_name),
-             update_time = ?
-         WHERE id = ?`,
-      )
-      .run(
-        input.projectPath ?? null,
-        input.agentSessionId ?? null,
-        input.deviceName?.trim() || null,
-        now,
-        sessionId,
-      )
+      .prepare(`UPDATE chat_sessions SET ${sets.join(', ')} WHERE id = ?`)
+      .run(...params)
   }
 
   updateSessionDeviceName(sessionId: string, deviceName: string): void {

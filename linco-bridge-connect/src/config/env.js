@@ -1,6 +1,7 @@
-﻿const os = require('os');
+﻿const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const { findGitBash, resolveCommand } = require('./commandResolution');
+const { findCodexBundledBinary, findGitBash, resolveCommand } = require('./commandResolution');
 const { getConfigFile, readUserConfig } = require('./io');
 const {
   DEFAULT_IM_IDLE_SESSION_MS,
@@ -120,6 +121,16 @@ function agentConfigFromChannels(userConfig, agentType) {
   return null;
 }
 
+// codex 允许只安装 Codex Desktop（无 CLI）：PATH 解析失败时回退到 Desktop 自带二进制。
+// 显式配置的 bin 找不到时不覆盖，保持原值由上层报错提示。
+function resolveCodexAgentBin(rawBin) {
+  const resolved = resolveCommand(rawBin || 'codex');
+  if (resolved && resolved !== 'codex' && fs.existsSync(resolved)) return resolved;
+  if (rawBin && rawBin !== 'codex') return resolved;
+  const bundled = findCodexBundledBinary();
+  return bundled || resolved;
+}
+
 function agentConfig(userConfig, imConfig, agentType, defaults = {}) {
   const configured = userConfig.agents?.[agentType] || {};
   const hasAgentEnabled = hasOwn(configured, 'enabled');
@@ -144,10 +155,12 @@ function agentConfig(userConfig, imConfig, agentType, defaults = {}) {
     ? resolveCommand(stringFromEnv('LINCO_HERMES_BIN', process.env.HERMES_BIN || configured.hermesBin || configured.bin || defaults.hermesBin || defaults.bin || 'hermes'))
     : undefined;
 
+  const rawBin = stringFromEnv(binEnv, channelAccount?.bin || configured.bin || defaults.bin);
+
   return {
     type: agentType,
     enabled,
-    bin: resolveCommand(stringFromEnv(binEnv, channelAccount?.bin || configured.bin || defaults.bin)),
+    bin: agentType === 'codex' ? resolveCodexAgentBin(rawBin) : resolveCommand(rawBin),
     wsUrl: stringFromEnv(wsEnv, channelAccount?.wsUrl || configured.wsUrl || defaults.wsUrl),
     mode: stringFromEnv(`LINCO_${agentType.toUpperCase()}_MODE`, configured.mode || defaults.mode),
     model: stringFromEnv(`LINCO_${agentType.toUpperCase()}_MODEL`, configured.model || defaults.model),

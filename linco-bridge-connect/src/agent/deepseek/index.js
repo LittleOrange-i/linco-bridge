@@ -556,6 +556,54 @@ async function listProjectSessions(_session, config, options = {}) {
   return Number.isInteger(limit) && limit > 0 ? sessions.slice(0, limit) : sessions;
 }
 
+// 全量会话列表（不限工作目录）：供移动端任务控制台使用。
+// workspace.list + session.list 不做工作目录过滤，running 由 Harness 直接给出。
+async function listAllThreads(_session, config, options = {}) {
+  const agentConfig = resolveAgentConfig(config);
+  const [workspaceResult, sessionResult] = await Promise.all([
+    callRpc(agentConfig, 'workspace.list', {}),
+    callRpc(agentConfig, 'session.list', {}),
+  ]);
+  const archivedSessionIds = new Set(
+    Array.isArray(workspaceResult.archivedSessionIds) ? workspaceResult.archivedSessionIds : [],
+  );
+  const workspaces = Array.isArray(workspaceResult.items) ? workspaceResult.items : [];
+  const workspaceBySession = new Map();
+  for (const workspace of workspaces) {
+    const ids = Array.isArray(workspace?.sessionIds) ? workspace.sessionIds : [];
+    for (const id of ids) {
+      if (!workspaceBySession.has(id)) {
+        workspaceBySession.set(id, {
+          workspaceId: workspace.workspaceId || '',
+          path: workspace.path || '',
+        });
+      }
+    }
+  }
+  const rows = Array.isArray(sessionResult.items) ? sessionResult.items : [];
+  const sessions = rows
+    .filter(item => item && typeof item.sessionId === 'string' && item.sessionId.trim())
+    .filter(item => item.blank !== true && item.origin !== 'subagent')
+    .filter(item => !archivedSessionIds.has(item.sessionId))
+    .map(item => {
+      const title = stringValue(item.projections?.values?.title) || item.sessionId;
+      const owned = workspaceBySession.get(item.sessionId) || {};
+      return {
+        id: item.sessionId,
+        title,
+        firstMessage: title,
+        updatedAt: Number.isFinite(Number(item.updatedAt)) ? Number(item.updatedAt) : 0,
+        workspace: owned.path || item.cwd || '',
+        workspaceId: owned.workspaceId || '',
+        running: item.running === true,
+        source: 'deepseek-harness',
+      };
+    })
+    .sort((a, b) => b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
+  const limit = Number(options.limit);
+  return Number.isInteger(limit) && limit > 0 ? sessions.slice(0, limit) : sessions;
+}
+
 async function findProjectSession(session, config, options = {}) {
   const targetId = String(options.sessionId || '').trim();
   if (!targetId) return null;
@@ -936,6 +984,7 @@ module.exports = {
   applySettings,
   execute,
   findProjectSession,
+  listAllThreads,
   listProjects,
   listProjectSessions,
   readSessionHistory,

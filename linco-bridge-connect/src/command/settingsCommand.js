@@ -123,10 +123,6 @@ async function buildCodexSettingsPayload(session, config = {}) {
   const currentReasoning = codexAgent._internal.currentCodexReasoningEffort(session);
   const defaultEffort = codexAgent._internal.codexDefaultReasoningEffort(agentConfig);
   const compatibleReasoningOptions = LEGACY_BRIDGE_REASONING_EFFORTS.map(effort => reasoningOptionFromId(effort));
-  const reasoningOptions = compatibleReasoningOptions.map(option => ({
-    ...option,
-    command: `/reasoning ${option.id}`,
-  }));
   const current = String(session.codexModelOverride || '').trim();
   const defaultModel = String(agentConfig.model || '').trim();
   let entries = [];
@@ -140,12 +136,26 @@ async function buildCodexSettingsPayload(session, config = {}) {
     || entries.find(entry => entry.isDefault)
     || entries[0]
     || null;
+  // 顶层 reasoning 档位跟随当前模型的真实档位（如 CC Switch 目录的 none/low/high/max），
+  // 模型无 metadata 时回退 legacy 4 档。
+  const currentEntry = (current && findModelEntry(entries, current)) || runtimeDefaultEntry;
+  const modelReasoningOptions = currentEntry?.hasReasoningEffortMetadata
+    ? currentEntry.supportedReasoningEfforts.map(option => reasoningOptionFromId(option.id, option))
+    : compatibleReasoningOptions;
+  const reasoningOptions = modelReasoningOptions.map(option => ({
+    ...option,
+    command: `/reasoning ${option.id}`,
+  }));
+  const modelDefaultEffort = [currentEntry?.defaultReasoningEffort, defaultEffort]
+    .find(effort => modelReasoningOptions.some(option => option.id === effort))
+    || modelReasoningOptions[0]?.id
+    || defaultEffort;
   return {
     capabilitiesVersion: 2,
     agentType: 'codex',
     reasoning: {
       current: currentReasoning,
-      defaultEffort,
+      defaultEffort: modelDefaultEffort,
       model: current || defaultModel,
       options: reasoningOptions,
     },

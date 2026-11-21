@@ -15,6 +15,20 @@ function parseSessionsArgs(rawArg) {
   const trimmed = String(rawArg || '').trim();
   if (!trimmed) return { ok: true, limit: DEFAULT_LOCAL_SESSIONS_LIMIT };
   if (trimmed.includes('--project')) return parseProjectSessionsArgs(trimmed);
+  // /sessions --all [数量]：全量任务列表（不限工作目录），codex/deepseek 专用
+  if (trimmed === '--all' || trimmed.startsWith('--all ') || trimmed.startsWith('--all=')) {
+    const rest = trimmed.startsWith('--all=')
+      ? trimmed.slice('--all='.length).trim()
+      : trimmed.slice('--all'.length).trim();
+    if (rest && !/^\d+$/.test(rest)) {
+      return { ok: false, message: `用法：/sessions --all [数量]，数量范围 1-${MAX_LOCAL_SESSIONS_LIMIT}。` };
+    }
+    const limit = rest ? Number(rest) : DEFAULT_LOCAL_SESSIONS_LIMIT;
+    if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LOCAL_SESSIONS_LIMIT) {
+      return { ok: false, message: `用法：/sessions --all [数量]，数量范围 1-${MAX_LOCAL_SESSIONS_LIMIT}。` };
+    }
+    return { ok: true, limit, all: true };
+  }
   if (!/^\d+$/.test(trimmed)) {
     return { ok: false, message: '用法：/sessions [数量]，数量范围 1-50，例如 /sessions 10。' };
   }

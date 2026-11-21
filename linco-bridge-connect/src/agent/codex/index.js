@@ -1,4 +1,5 @@
 ﻿const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
 const { isDangerousCommand } = require('../../core/danger');
@@ -213,6 +214,99 @@ async function listProjectSessions(session, config, options = {}) {
       workspace: projectPath,
     });
     return localSessions;
+  }
+}
+
+// 全量线程列表（不限工作目录）：供移动端任务控制台使用。
+// RPC thread/list 不带 cwd 即全量；运行状态用共享 writer-locks 目录判定
+// （Codex Desktop / CLI / 连接器共用同一锁目录，跨进程可靠）。
+async function listAllThreads(session, config, options = {}) {
+  if (isCodexExecMode(config)) {
+    return listProjectSessionsFromLocal(session, config, { ...options, workspace: '' });
+  }
+
+  const resultLimit = Number.isInteger(options.limit) && options.limit > 0
+    ? Math.min(options.limit, MAX_LOCAL_SESSIONS_LIMIT)
+    : 50;
+  await prepareCodexRpcSession(session, config);
+
+  const sessions = [];
+  let cursor;
+  for (let page = 0; page < 20; page += 1) {
+    const pageLimit = Math.min(100, Math.max(resultLimit - sessions.length, 1));
+    const result = await rpcRequest(session, nextRpcId(session), 'thread/list', {
+      limit: pageLimit,
+      sortKey: 'recency_at',
+      sortDirection: 'desc',
+      ...(cursor ? { cursor } : {}),
+    });
+    const rows = Array.isArray(result?.data) ? result.data : [];
+    for (const row of rows) {
+      const mapped = mapThreadListItem(row, '');
+      if (!mapped) continue;
+      sessions.push(mapped);
+      if (sessions.length >= resultLimit * 2) break;
+    }
+    cursor = typeof result?.nextCursor === 'string' ? result.nextCursor.trim() : '';
+    if (!cursor || sessions.length >= resultLimit * 2 || rows.length === 0) break;
+  }
+
+  // thread/list 可能对同一 thread 返回多段重复项，按 id 去重保留 recency 最新。
+  const byId = new Map();
+  for (const item of sessions) {
+    const existing = byId.get(item.id);
+    if (!existing || (Number(item.updatedAt) || 0) > (Number(existing.updatedAt) || 0)) {
+      byId.set(item.id, item);
+    }
+  }
+  const merged = Array.from(byId.values());
+  markRunningFromWriterLocks(merged, session);
+  merged.sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0));
+  return merged.slice(0, resultLimit);
+}
+
+// 用 ~/.codex/thread-writer-locks 目录标记运行中的线程。
+// state-db 里的线程 status 常态是 notLoaded，active 只出现在本进程内活跃线程上，
+// 所以跨进程的"正在运行"判定必须走锁目录（排除 .coordination.lock 协调锁）。
+// 锁文件可能是崩溃残留的 stale 锁：需要校验持有进程是否存活。
+// 自身进程与本会话的 app-server 不算外部持有者，否则自己的子进程会让 stale 锁误判。
+function markRunningFromWriterLocks(sessions, session = null) {
+  if (!Array.isArray(sessions) || sessions.length === 0) return;
+  const lockDir = path.join(os.homedir(), '.codex', 'thread-writer-locks');
+  let lockIds;
+  try {
+    lockIds = new Set(
+      fs.readdirSync(lockDir)
+        .filter(name => name.endsWith('.lock') && name !== '.coordination.lock')
+        .map(name => name.slice(0, -'.lock'.length)),
+    );
+  } catch {
+    return;
+  }
+  if (lockIds.size === 0) return;
+
+  const candidates = sessions.filter(item => lockIds.has(String(item.id || '')));
+  if (candidates.length === 0) return;
+  for (const item of candidates) item.running = true;
+
+  const { listCodexAppServerProcesses } = require('./threadWriterLock');
+  let processes;
+  try {
+    processes = listCodexAppServerProcesses();
+  } catch {
+    return; // 枚举失败保守处理：维持锁判定
+  }
+  const ownPids = new Set(
+    [process.pid, session?.codexAppServer?.pid]
+      .filter(pid => Number.isInteger(pid) && pid > 0),
+  );
+  const externalHolders = processes.filter(row => !ownPids.has(Number(row.pid)));
+  if (externalHolders.length > 0) return; // 有外部持有进程（如 Desktop），锁判定有效
+
+  // 没有外部持有进程：锁是 stale 残留；只有本会话正在写的线程保留 running。
+  const ownThreadId = String(session?.codexActiveThreadId || '').trim();
+  for (const item of candidates) {
+    item.running = Boolean(ownThreadId) && String(item.id || '') === ownThreadId;
   }
 }
 
@@ -870,7 +964,7 @@ async function applyCodexReasoningEffort(ws, session, config, effortInput) {
 
 function listCodexModels(ws, session, config) {
   return ensureAppServer(session, config)
-    .then(() => rpcRequest(session, nextRpcId(session), 'model/list', { includeHidden: true, limit: 100 }))
+    .then(() => requestCodexModelList(session))
     .then(result => {
       const models = withCodexFallbackModels(normalizeCodexModelList(result));
       const current = session.codexModelOverride || config.agents?.codex?.model || '';
@@ -1042,7 +1136,13 @@ async function loadCodexActualModelEntries(session, config) {
 }
 
 function requestCodexModelList(session) {
-  return rpcRequest(session, nextRpcId(session), 'model/list', { includeHidden: true, limit: 100 });
+  return rpcRequest(session, nextRpcId(session), 'model/list', { includeHidden: true, limit: 100 })
+    .then(result => {
+      // 部分 codex 构建（如商店版自带二进制）带 includeHidden=true 会返回空列表，
+      // 此时去掉该参数重试一次。
+      if (normalizeCodexModelEntries(result).length > 0) return result;
+      return rpcRequest(session, nextRpcId(session), 'model/list', { limit: 100 });
+    });
 }
 
 async function loadCodexReasoningChoicesWithListFallback(session, config) {
@@ -3351,6 +3451,7 @@ module.exports = {
   compact: compactCodexContext,
   execute,
   findProjectSession,
+  listAllThreads,
   listProjectSessions,
   listProjects,
   model: modelCodexContext,

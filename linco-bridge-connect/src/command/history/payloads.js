@@ -73,11 +73,14 @@ function formatLocalProjectSessions(agentType, workspace, sessions, requestedLim
   return `当前工作目录最近 ${sessions.length} 个 ${agentType} session（请求 ${requestedLimit} 个）：\n${workspace}\n\n${lines.join('\n\n')}`;
 }
 
-function buildSessionsPayload(agentType, workspace, sessions, actions, requestedLimit) {
+function buildSessionsPayload(agentType, workspace, sessions, actions, requestedLimit, options = {}) {
+  const allThreads = options.allThreads === true;
   return {
     version: 1,
     agentType,
     workspace,
+    // all-threads：全量任务列表（不限工作目录）；workspace：按工作目录过滤
+    scope: allThreads ? 'all-threads' : 'workspace',
     requestedLimit,
     returnedCount: sessions.length,
     items: sessions.map((item, index) => {
@@ -95,7 +98,11 @@ function buildSessionsPayload(agentType, workspace, sessions, actions, requested
         updatedAtText: formatDateTime(item.updatedAt),
         transcriptPath: item.transcriptPath || '',
         workspace: sessionWorkspace,
-        bindCommand: actions[index]?.command || `/bind ${quoteProjectPath(item.id)}`,
+        running: item.running === true,
+        source: item.source || '',
+        bindCommand: allThreads
+          ? null
+          : (actions[index]?.command || `/bind ${quoteProjectPath(item.id)}`),
         resumeCommand,
       };
     }),

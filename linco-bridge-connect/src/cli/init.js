@@ -1,5 +1,6 @@
 const fs = require('fs');
 const {
+  findCodexBundledBinary,
   getConfigFile,
   loadConfig,
   parseToken,
@@ -36,9 +37,18 @@ function initCommand(options, context = {}) {
     }
   }
 
+  let codexBundledBin = null;
   if (agentType) {
     // Hermes and DeepSeek Harness are gateway services, not same-named CLI binaries.
-    if (agentType !== 'hermes' && agentType !== 'deepseek') {
+    if (agentType === 'codex') {
+      // codex 允许只安装 Codex Desktop：PATH 无 CLI 时发现自带二进制并写入配置。
+      if (!commandExists('codex')) {
+        codexBundledBin = findCodexBundledBinary();
+        if (!codexBundledBin) {
+          throw new Error('未检测到 codex CLI 或 Codex Desktop，请安装其一后再初始化。');
+        }
+      }
+    } else if (agentType !== 'hermes' && agentType !== 'deepseek') {
       const agentBin = resolveCommand(agentType);
       if (!agentBin || !commandExists(agentType)) {
         throw new Error(`未检测到 ${agentType} CLI，请先安装 ${agentType} 再初始化。`);
@@ -54,6 +64,7 @@ function initCommand(options, context = {}) {
     channel,
     wsUrl,
     allowInsecureWs: options['allow-insecure-ws'] === true,
+    codexBundledBin,
   });
   saveUserConfig(next, configFile);
 
@@ -65,6 +76,9 @@ function initCommand(options, context = {}) {
   console.log(`   账号: ${account}`);
   if (agentType) {
     console.log(`   Agent 类型: ${agentType}`);
+  }
+  if (codexBundledBin) {
+    console.log(`   Codex 二进制: ${codexBundledBin}（Codex Desktop 自带，无需单独 CLI）`);
   }
   console.log('   下一步: linco-connect doctor && linco-connect start');
 }
@@ -78,6 +92,7 @@ function mergeInitConfig(current, values) {
   if (values.wsUrl) accountEntry.wsUrl = values.wsUrl;
   if (values.allowInsecureWs) accountEntry.allowInsecureWs = true;
   if (values.agentType === 'openclaw') accountEntry.openclawAgentId = 'main';
+  if (values.agentType === 'codex' && values.codexBundledBin) accountEntry.bin = values.codexBundledBin;
   const agentType = values.agentType || 'claude';
   const channel = values.channel || 'linco';
   const currentChannel = current.channels?.[channel] || {};
