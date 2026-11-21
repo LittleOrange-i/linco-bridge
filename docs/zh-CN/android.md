@@ -102,6 +102,7 @@ npm run dev:h5                   # 5173 端口，手机浏览器访问 http://<�
 | 现象 | 处理 |
 | --- | --- |
 | App 提示无法连接服务器 | 确认服务器已启动（3300 监听）、手机与电脑同一局域网、`android.env` 里 IP 与电脑当前 IP 一致；Windows 防火墙需放行 TCP 3300 入站。 |
+| 服务器窗口报 `EADDRINUSE :::3300` | 3300 被上一次没关干净的 server 占用：`netstat -ano | findstr :3300` 找到 LISTENING 行的 PID，`taskkill /PID <PID> /T /F` 结束后重新启动；或直接重启电脑。 |
 | 电脑换了 WiFi / IP | 更新 `android.env` 的 `VITE_API_BASE_URL` 后重新打包安装。 |
 | 打包脚本找不到 gradlew | 确认在仓库根目录运行脚本；首次构建需联网下载 Gradle 与 SDK 组件。 |
 | `adb` 未找到 | 安装 Android platform-tools 并加入 PATH，或按脚本提示手动安装 APK。 |
