@@ -21,11 +21,14 @@
     "build": "node scripts/with-prod-env.mjs vite build",
     "preview": "vite preview",
     "cap:sync": "npm run build:android && npx cap sync",
+    "cap:sync:env": "npm run build:android-env && npx cap sync",
     "android:add": "npx cap add android",
     "android:dev": "npm run cap:sync && npx cap open android",
     "android:build": "npm run cap:sync && cd android && gradlew.bat :app:assembleDebug",
+    "android:build:env": "npm run cap:sync:env && cd android && gradlew.bat :app:assembleDebug",
     "android:check": "node scripts/check-android-env.cjs",
-    "build:android": "vite build"
+    "build:android": "vite build",
+    "build:android-env": "node scripts/with-prod-env.mjs android.env vite build"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",
