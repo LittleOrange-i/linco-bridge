@@ -74,8 +74,9 @@ const CODEX_COMPACTION_STALE_MS = 90_000;
 const DEFAULT_CODEX_COMPACTION_TIMEOUT_MS = 300_000;
 const DEFAULT_CODEX_RPC_TIMEOUT_MS = 15_000;
 const CODEX_THREAD_RESUME_MAX_ATTEMPTS = 2;
-// /stop 或 history-reload 后写锁释放可能有短暂延迟，active writer 允许有限次重试。
-const CODEX_THREAD_ACTIVE_WRITER_RESUME_MAX_ATTEMPTS = 1;
+// /stop 或 history-reload 后写锁释放可能有短暂延迟，active writer 允许有限次重试；
+// stale 锁探测接管后还需要一次重试，因此上限为 2（1 次原始 + 1 次接管后重试）。
+const CODEX_THREAD_ACTIVE_WRITER_RESUME_MAX_ATTEMPTS = 2;
 const CODEX_THREAD_ACTIVE_WRITER_RETRY_DELAY_MS = 350;
 
 class CodexRpcMethodError extends Error {
@@ -1509,7 +1510,9 @@ async function ensureThreadOnce(session) {
     && session.codexDeveloperInstructionsApplied !== true
     ? resolvedDeveloperInstructions
     : '';
-  const threadId = await startNewThread(session, agentConfig, developerInstructions);
+  // 手机端新会话对接桌面端项目目录，使 Codex Desktop 在同一项目下可见（见函数注释）
+  const workspace = await resolveDesktopRecentWorkspace(session);
+  const threadId = await startNewThread(session, agentConfig, developerInstructions, { workspace });
   session.codexActiveThreadId = threadId;
   return threadId;
 }
@@ -1563,14 +1566,26 @@ async function resumeBoundCodexThread(session, expectedThreadId) {
           message: err.message,
         });
         if (activeWriter) {
-          // 只清理 Linco/CLI 孤儿；占锁后不要再 ensureAppServer（Desktop 占锁时会卡住「正在思考」）。
-          // reclaim 一次后立刻失败结束回合，由 failCodexTurn 发占用提示并停掉思考态。
+          // 清理 Linco/CLI 孤儿进程，并对 thread 锁做真实探测：
+          //   stale/absent → 删掉残留锁后重建 app-server 并重试 resume（桌面端空闲/锁残留场景打通）
+          //   held         → Codex 桌面端确实正在该会话写入，立刻结束回合，由 failCodexTurn 发占用提示
           await recycleCodexAppServerForResumeRetry(session, {
             reclaimOrphans: true,
             threadId: expectedThreadId,
-            skipEnsureAppServer: true,
+            skipEnsureAppServer: false,
           });
-          break;
+          const reclaimResult = session.codexLastWriterReclaim || {};
+          const lockCleared =
+            reclaimResult.removedLock === true
+            || reclaimResult.lockProbe === 'absent'
+            || reclaimResult.lockProbe === 'stale';
+          if (!lockCleared) break;
+          if (attempt >= attemptLimit) break;
+          session._log?.warn('codex stale thread lock cleared, retrying resume', {
+            threadId: expectedThreadId,
+            lockProbe: reclaimResult.lockProbe,
+            attempt: attempt + 1,
+          });
         }
       }
     }
@@ -1671,8 +1686,10 @@ function buildCodexThreadResumeFailureMessage(session, err) {
       return '该会话是通过 Codex 旧版“复制会话”功能创建的。新版 Codex 已调整这类会话的写入机制，Linco App 暂时无法继续在原会话中聊天。原会话内容不会丢失，可在 Codex 桌面端继续使用。';
     }
     const desktopHolders = session?.codexLastWriterReclaim?.desktopHolders;
-    if (Array.isArray(desktopHolders) && desktopHolders.length > 0) {
-      return '检测到会话写入权被占用，请执行 /stop desktop来释放进程';
+    const lockProbe = session?.codexLastWriterReclaim?.lockProbe;
+    // 真占用（探测到锁被进程持有）：引导用户等桌面端空闲，而不是误导其立刻杀进程
+    if (lockProbe === 'held' || (Array.isArray(desktopHolders) && desktopHolders.length > 0)) {
+      return 'Codex 桌面端正在使用该会话（写入权被占用）。请等桌面端空闲或在桌面端关闭该会话后重试；确认不再使用时可发送 /stop desktop 释放。';
     }
     return '检测到会话写入权被占用，请执行 /stop desktop来释放进程';
   }
@@ -1696,8 +1713,61 @@ function resumeCodexThread(session, developerInstructions = '') {
   });
 }
 
-function startNewThread(session, agentConfig, developerInstructions = '') {
-  return requestStartCodexThread(session, agentConfig, developerInstructions).then(result => {
+/**
+ * 为手机端新建会话解析 cwd：默认沙箱目录（~/.linco/...）会被 Codex Desktop
+ * 按 cwd 分组到隐藏的 .linco 项目里，用户在桌面端看不到手机发起的会话。
+ * 改为对接桌面端最近活跃会话的项目目录（thread/list 取最近 N 条，
+ * 取第一个存在且不在 Linco 沙箱内的 cwd），使新会话与桌面端工作在同一项目下，
+ * 桌面端历史列表可见、可继续。取不到时回退沙箱目录。
+ */
+async function resolveDesktopRecentWorkspace(session) {
+  const sandboxRoot = path.join(
+    os.homedir(),
+    '.linco',
+    'codex',
+    'sessions',
+  );
+  const isSandboxPath = (value) => {
+    const normalized = path.resolve(String(value || '')).toLowerCase();
+    const rootNormalized = path.resolve(sandboxRoot).toLowerCase();
+    return normalized === rootNormalized || normalized.startsWith(`${rootNormalized}${path.sep}`);
+  };
+  // app-server 未就绪时直接回退，避免空等 RPC 超时（正常流程 ensureAppServer 已先行完成）
+  const childStdin = session.codexAppServer?.stdin;
+  if (!childStdin || childStdin.destroyed) return session.workspace;
+  try {
+    const result = await rpcRequest(session, nextRpcId(session), 'thread/list', {
+      limit: 10,
+      sortKey: 'recency_at',
+      sortDirection: 'desc',
+    });
+    const rows = Array.isArray(result?.data) ? result.data : [];
+    for (const row of rows) {
+      const cwd = String(row?.cwd || '').trim();
+      if (!cwd) continue;
+      if (isSandboxPath(cwd)) continue;
+      if (!fs.existsSync(cwd)) continue;
+      try {
+        if (!fs.statSync(cwd).isDirectory()) continue;
+      } catch {
+        continue;
+      }
+      session._log?.info?.('codex new thread adopts recent desktop workspace', {
+        cwd,
+        threadId: String(row?.id || ''),
+      });
+      return cwd;
+    }
+  } catch (err) {
+    session._log?.warn?.('codex resolve recent desktop workspace failed, fallback to sandbox', {
+      message: err?.message || String(err),
+    });
+  }
+  return session.workspace;
+}
+
+function startNewThread(session, agentConfig, developerInstructions = '', options = {}) {
+  return requestStartCodexThread(session, agentConfig, developerInstructions, options).then(result => {
     recordCodexThreadReasoning(session, result);
     if (developerInstructions && session.codexDeveloperInstructionsMode === 'developer') {
       session.codexDeveloperInstructionsApplied = true;
@@ -1723,12 +1793,13 @@ function startNewThread(session, agentConfig, developerInstructions = '') {
   });
 }
 
-function requestStartCodexThread(session, agentConfig, developerInstructions = '') {
+function requestStartCodexThread(session, agentConfig, developerInstructions = '', options = {}) {
   const rpcId = nextRpcId(session);
   return rpcRequest(session, rpcId, 'thread/start', buildCodexThreadStartParams(
     session,
     agentConfig,
     developerInstructions,
+    options,
   )).catch(err => {
     if (!developerInstructions) throw err;
     switchCodexDeveloperInstructionsToInputFallback(session, err);
@@ -1736,6 +1807,8 @@ function requestStartCodexThread(session, agentConfig, developerInstructions = '
     return rpcRequest(session, fallbackRpcId, 'thread/start', buildCodexThreadStartParams(
       session,
       agentConfig,
+      '',
+      options,
     ));
   });
 }
@@ -1748,14 +1821,16 @@ function switchCodexDeveloperInstructionsToInputFallback(session, err) {
   session.codexDeveloperInstructionsApplied = false;
 }
 
-function buildCodexThreadStartParams(session, agentConfig = {}, developerInstructions = '') {
+function buildCodexThreadStartParams(session, agentConfig = {}, developerInstructions = '', options = {}) {
+  // workspace 覆盖：手机端新会话对接桌面端项目目录时，cwd 与可写沙箱根保持一致
+  const workspace = String(options.workspace || session.workspace || '').trim() || session.workspace;
   return {
-    cwd: session.workspace,
+    cwd: workspace,
     model: agentConfig.model || null,
     effort: codexDefaultReasoningEffort(agentConfig),
     approvalPolicy: codexApprovalPolicy(session),
     ...(developerInstructions ? { developerInstructions } : {}),
-    ...buildCodexThreadSandbox(session),
+    ...buildCodexThreadSandbox(session, { workspace }),
   };
 }
 
@@ -2444,8 +2519,9 @@ function failPendingCodexManualCompaction(session, code, message) {
   return true;
 }
 
-function buildCodexThreadSandbox(session) {
-  const writableRoots = [session.workspace].filter(Boolean);
+function buildCodexThreadSandbox(session, options = {}) {
+  // 可写根目录跟随 thread cwd：对接桌面端项目目录时，把项目目录作为可写根
+  const writableRoots = [options.workspace || session.workspace].filter(Boolean);
   const agentConfig = session._lastConfig?.agents?.codex || {};
   if (session?.approveMode === 'yolo') {
     return {

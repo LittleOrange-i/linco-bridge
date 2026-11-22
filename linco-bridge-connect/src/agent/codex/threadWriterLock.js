@@ -179,6 +179,55 @@ function tryRemoveThreadWriterLock(threadId, homeDir = os.homedir()) {
   }
 }
 
+/**
+ * 探测 thread 写锁是否真被进程持有（Windows）。
+ *
+ * 背景：锁文件是 0 字节残留标记，Desktop 进程存在 ≠ 该 thread 锁被持有；
+ * 旧逻辑「有 Desktop 进程就不敢动锁」导致桌面端空闲时手机端也无法继续会话。
+ * Codex(Rust) 在 Windows 用 LockFileEx 对整个锁文件加排他区间锁，
+ * 因此用 .NET FileStream 尝试对同一文件加锁即可区分：
+ *   - 能加锁  → 无进程持有（stale 残留），可安全删除后接管
+ *   - 加锁失败 → 有进程持有（Desktop 正在该会话写入），绝不可动
+ *
+ * 返回 'absent'（文件不存在）| 'stale'（残留）| 'held'（真占用）| 'unknown'（无法判定）。
+ */
+function probeThreadWriterLockHeld(threadId, homeDir = os.homedir()) {
+  const lockPath = resolveThreadWriterLockPath(threadId, homeDir);
+  if (!lockPath) return 'unknown';
+  if (process.platform !== 'win32') return 'unknown';
+  try {
+    if (!fs.existsSync(lockPath)) return 'absent';
+  } catch {
+    return 'unknown';
+  }
+  // 单引号包裹路径，内部单引号按 PowerShell 规则成对转义
+  const quotedPath = `'${String(lockPath).replace(/'/g, "''")}'`;
+  const script = [
+    `$p = ${quotedPath}`,
+    'try {',
+    "  $fs = [System.IO.File]::Open($p, 'Open', 'ReadWrite', 'ReadWrite')",
+    '  try {',
+    '    $fs.Lock(0, 1)',
+    '    $fs.Unlock(0, 1)',
+    "    'PROBE_LOCKABLE'",
+    '  } finally { $fs.Dispose() }',
+    "} catch { 'PROBE_HELD' }",
+  ].join('\n');
+  const result = spawnSync(
+    'powershell.exe',
+    ['-NoProfile', '-NonInteractive', '-Command', script],
+    { encoding: 'utf8', windowsHide: true, timeout: 10000 },
+  );
+  const lines = String(result.stdout || '')
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+  const lastLine = lines.length > 0 ? lines[lines.length - 1] : '';
+  if (lastLine === 'PROBE_LOCKABLE') return 'stale';
+  if (lastLine === 'PROBE_HELD') return 'held';
+  return 'unknown';
+}
+
 function isRunningUnderNodeTest() {
   if (typeof process.env.NODE_TEST !== 'undefined') return true;
   return process.execArgv.some(arg => arg === '--test' || arg.startsWith('--test'));
@@ -240,15 +289,27 @@ function reclaimOrphanCodexWriters({
     });
   }
 
-  // 只有确认没有 Desktop 占锁时，才尝试删 stale lock；Desktop 活着时删了也无用且可能误导。
+  // 锁清理改用真实探测：Desktop 进程存在 ≠ 该 thread 锁被持有。
+  //   stale/absent → 残留锁，可安全删除后由上层重试 resume（桌面端空闲场景即可打通）
+  //   held        → Desktop 正在该会话写入，绝不碰锁，由上层返回占用提示
+  //   unknown     → 回退旧行为（仅无 Desktop 进程时清理）
+  const lockProbe = probeThreadWriterLockHeld(threadId, homeDir);
   let removedLock = false;
-  if (desktop.length === 0) {
+  if (lockProbe === 'stale' || (lockProbe === 'unknown' && desktop.length === 0)) {
     removedLock = tryRemoveThreadWriterLock(threadId, homeDir);
     if (removedLock) {
-      logger?.info?.('codex removed stale thread lock file', { threadId });
+      logger?.info?.('codex removed stale thread lock file', {
+        threadId,
+        lockProbe,
+      });
     }
-  } else {
-    logger?.info?.('codex desktop still holds app-server; skip killing desktop and lock file', {
+  } else if (lockProbe === 'held') {
+    logger?.info?.('codex thread lock held by live writer; keep lock and return occupancy hint', {
+      threadId,
+      desktopPids: desktop.map(row => row.pid),
+    });
+  } else if (desktop.length > 0) {
+    logger?.info?.('codex desktop app-server present; skip killing desktop', {
       threadId,
       desktopPids: desktop.map(row => row.pid),
     });
@@ -257,6 +318,7 @@ function reclaimOrphanCodexWriters({
   return {
     killed,
     removedLock,
+    lockProbe,
     desktopHolders: desktop.map(row => row.pid),
     skipped: null,
   };
@@ -274,6 +336,7 @@ module.exports = {
   isCodexAppServerCommandLine,
   isDesktopCodexAppServerCommandLine,
   listCodexAppServerProcesses,
+  probeThreadWriterLockHeld,
   reclaimCodexThreadWriter,
   reclaimOrphanCodexWriters,
   resolveCodexHome,

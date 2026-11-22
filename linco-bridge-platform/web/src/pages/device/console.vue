@@ -22,6 +22,11 @@ const connectionId = ref<string>('')
 const deviceName = ref('电脑')
 const avatar = ref('💻')
 
+// avatar 是否为图片路径（/static/... 或 http 开头）；路径渲染成 <img>，否则按 emoji 文本展示
+const isImageAvatar = computed(
+  () => avatar.value.startsWith('/') || avatar.value.startsWith('http'),
+)
+
 const threads = ref<DeviceThreadItem[]>([])
 const online = ref(true)
 const loading = ref(false)
@@ -155,7 +160,14 @@ function openLanding() {
     <div class="console-page__scroll">
       <!-- 设备状态卡 -->
       <div class="device-card">
-        <div class="device-card__avatar">{{ avatar }}</div>
+        <!-- avatar 可能是图标路径（/static/...）或 emoji：路径渲染成图片，否则按文本展示 -->
+        <img
+          v-if="isImageAvatar"
+          class="device-card__avatar-img"
+          :src="avatar"
+          alt=""
+        />
+        <div v-else class="device-card__avatar">{{ avatar }}</div>
         <div class="device-card__info">
           <div class="device-card__name">{{ deviceName }}</div>
           <div class="device-card__meta">
@@ -271,6 +283,15 @@ function openLanding() {
   align-items: center;
   justify-content: center;
   font-size: 44rpx;
+  margin-right: 20rpx;
+}
+
+/* avatar 为图片路径时的占位样式，与 emoji 版本保持同尺寸圆角 */
+.device-card__avatar-img {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 20rpx;
+  background: #eef4f0;
   margin-right: 20rpx;
 }
 
