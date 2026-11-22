@@ -8,6 +8,7 @@ import type { SlashCommandItem } from '@/bridge/slash-command'
 import { useChatTextareaSubmit } from '@/composables/useChatTextareaSubmit'
 import { extractTextareaInputMeta, useSlashCommandInput } from '@/composables/useSlashCommandInput'
 import { CHAT_ICON } from '@/constants/chat-icons'
+import { isNativePlatform } from '@/utils/uni-compat'
 
 const props = withDefaults(
   defineProps<{
@@ -89,6 +90,10 @@ function handleVoice() {
   emit('voice')
 }
 
+// 语音输入依赖 Web SpeechRecognition，Capacitor 原生壳（安卓 WebView）不支持，
+// 手机端隐藏语音按钮，仅浏览器 H5 保留
+const showVoice = !isNativePlatform
+
 const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmit(
   () => canSubmit.value,
   handleSend,
@@ -140,7 +145,7 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
         <div class="landing-input__toolbar-spacer" />
 
         <div v-if="canSend && !starting" class="landing-input__actions">
-          <div class="landing-input__tool" @click="handleVoice">
+          <div v-if="showVoice" class="landing-input__tool" @click="handleVoice">
             <img class="landing-input__icon" :src="CHAT_ICON.voice" />
           </div>
           <ChatInputActionButton
@@ -149,7 +154,11 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
             @send="handleSend"
           />
         </div>
-        <div v-else class="landing-input__tool landing-input__tool--right" @click="handleVoice">
+        <div
+          v-else-if="showVoice"
+          class="landing-input__tool landing-input__tool--right"
+          @click="handleVoice"
+        >
           <img class="landing-input__icon" :src="CHAT_ICON.voice" />
         </div>
       </div>

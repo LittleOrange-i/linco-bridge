@@ -8,6 +8,7 @@ import type { SlashCommandItem } from '@/bridge/slash-command'
 import { useChatTextareaSubmit } from '@/composables/useChatTextareaSubmit'
 import { extractTextareaInputMeta, useSlashCommandInput } from '@/composables/useSlashCommandInput'
 import { CHAT_ICON } from '@/constants/chat-icons'
+import { isNativePlatform } from '@/utils/uni-compat'
 
 const props = withDefaults(
   defineProps<{
@@ -100,6 +101,10 @@ function handleVoice() {
   emit('voice')
 }
 
+// 语音输入依赖 Web SpeechRecognition，Capacitor 原生壳（安卓 WebView）不支持，
+// 手机端隐藏语音按钮，仅浏览器 H5 保留
+const showVoice = !isNativePlatform
+
 function handlePickSettings() {
   emit('pick-settings')
 }
@@ -161,13 +166,14 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
         <div class="chat-input__toolbar-spacer" />
 
         <div v-if="canSend && !sending" class="chat-input__actions">
-          <div class="chat-input__tool" @click="handleVoice">
+          <div v-if="showVoice" class="chat-input__tool" @click="handleVoice">
             <img class="chat-input__icon" :src="CHAT_ICON.voice" />
           </div>
           <ChatInputActionButton
             :can-send="canSend"
             :is-send-disabled="isSendDisabled || disabled"
             :is-sending="sending"
+            :voice-enabled="showVoice"
             @send="handleSend"
             @voice="handleVoice"
           />
@@ -178,6 +184,7 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
           :can-send="canSend"
           :is-send-disabled="isSendDisabled || disabled"
           :is-sending="sending"
+          :voice-enabled="showVoice"
           @send="handleSend"
           @stop="emit('stop')"
           @voice="handleVoice"

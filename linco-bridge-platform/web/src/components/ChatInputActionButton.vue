@@ -11,12 +11,15 @@ const props = withDefaults(
     canSend?: boolean
     isSendDisabled?: boolean
     isSending?: boolean
+    /** 是否启用语音空态图标（依赖 Web SpeechRecognition，Capacitor 原生壳内应关闭） */
+    voiceEnabled?: boolean
     voiceIconSizeRpx?: number
   }>(),
   {
     canSend: false,
     isSendDisabled: false,
     isSending: false,
+    voiceEnabled: true,
     voiceIconSizeRpx: CHAT_INPUT_ICON_SIZE_RPX,
   },
 )
@@ -41,6 +44,8 @@ function handleTap() {
     emit('send')
     return
   }
+  // 语音入口被裁剪（原生壳）时空态点击无操作
+  if (!props.voiceEnabled) return
   emit('voice')
 }
 </script>
@@ -60,6 +65,11 @@ function handleTap() {
   >
     <span v-if="isSending" class="chat-action-btn__stop">■</span>
     <img v-else-if="canSend" class="chat-action-btn__send" :src="sendIconSrc" />
+    <img
+      v-else-if="!voiceEnabled"
+      class="chat-action-btn__send"
+      :src="CHAT_ICON.sendDisabled"
+    />
     <img
       v-else
       class="chat-action-btn__voice"

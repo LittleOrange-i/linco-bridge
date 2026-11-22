@@ -9,7 +9,10 @@ import { toRouteQuery } from '@/utils/route-query'
 
 type UnknownRecord = Record<string, unknown>
 
-const isNative = Capacitor.isNativePlatform()
+// 是否运行在 Capacitor 原生壳（安卓/iOS App）内；供组件按平台裁剪功能入口
+export const isNativePlatform = Capacitor.isNativePlatform()
+
+const isNative = isNativePlatform
 
 interface ToastOptions {
   title: string
