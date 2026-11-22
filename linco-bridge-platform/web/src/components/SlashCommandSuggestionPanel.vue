@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { slashCommandDisplayCommand, type SlashCommandItem } from '@/bridge/slash-command'
+import { uniCompat } from '@/utils/uni-compat'
 
 const props = defineProps<{
   commands: SlashCommandItem[]
@@ -11,7 +12,10 @@ const emit = defineEmits<{
 }>()
 
 const visibleCount = computed(() => Math.min(props.commands.length, 8))
-const maxHeight = computed(() => `${visibleCount.value * 68 + 2}rpx`)
+// inline style 的 rpx 不会被 PostCSS 编译，需运行时换算 px（68rpx ≈ 单行高度 + 分隔余量）
+const maxHeight = computed(
+  () => `${Math.round(uniCompat.upx2px(visibleCount.value * 68 + 2))}px`,
+)
 
 function handleSelect(item: SlashCommandItem) {
   emit('select', item)

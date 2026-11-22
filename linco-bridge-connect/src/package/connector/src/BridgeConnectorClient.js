@@ -2,6 +2,18 @@ const { EventEmitter } = require('node:events');
 const { WebSocket } = require('ws');
 const { safeUrlForLog } = require('../../protocol');
 
+// 回环/私有网段主机名（本机与局域网调试场景，ws:// 明文默认放行）
+function isPrivateNetworkHostname(hostname) {
+  const host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+  if (!host) return false;
+  if (host === 'localhost' || host === '::1' || host.endsWith('.local')) return true;
+  if (host === '127.0.0.1' || host.startsWith('127.')) return true;
+  if (host.startsWith('192.168.')) return true;
+  if (/^10\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  return false;
+}
+
 class BridgeConnectorClient extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -99,8 +111,9 @@ class BridgeConnectorClient extends EventEmitter {
 
   buildUrl() {
     const url = new URL(this.options.wsUrl);
-    if (url.protocol !== 'wss:' && !this.options.allowInsecureWs) {
-      throw new Error('remote bridge requires wss by default; set allowInsecureWs for local debugging');
+    // ws:// 明文仅对回环/私有网段默认放行（本机与局域网调试），公网 ws:// 仍需显式 allowInsecureWs
+    if (url.protocol !== 'wss:' && !this.options.allowInsecureWs && !isPrivateNetworkHostname(url.hostname)) {
+      throw new Error('remote bridge requires wss by default; set allowInsecureWs for insecure ws:// on public hosts');
     }
     url.searchParams.delete('appId');
     url.searchParams.delete('appSecret');

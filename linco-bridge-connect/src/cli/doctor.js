@@ -15,6 +15,21 @@ const {
 } = require('../gateway/openclawGateway');
 const { commandExists, safeUrlForDisplay } = require('./utils');
 
+// 回环/私有网段主机名判定（与 BridgeConnectorClient 的 ws:// 放行逻辑保持一致）
+function isPrivateNetworkWsUrl(url) {
+  try {
+    const host = new URL(url).hostname.toLowerCase().replace(/^\[|\]$/g, '');
+    if (host === 'localhost' || host === '::1' || host.endsWith('.local')) return true;
+    if (host === '127.0.0.1' || host.startsWith('127.')) return true;
+    if (host.startsWith('192.168.')) return true;
+    if (/^10\./.test(host)) return true;
+    if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 // 标注 codex 二进制来源：PATH 上的 CLI 或 Codex Desktop 自带（无 CLI 也可用）。
 function describeCodexBinSource(bin) {
   const text = String(bin || '');
@@ -133,10 +148,16 @@ function channelDoctorChecks(config, userConfig) {
         entry.accountConfig.appId ? `appId=${entry.accountConfig.appId}` : 'missing appId/appSecret',
       ]);
       if (wsUrl && /^ws:\/\//i.test(wsUrl)) {
+        // 回环/私有网段的 ws:// 已默认放行（与本机/局域网调试场景一致），仅公网 ws:// 提示
+        const isPrivateHost = isPrivateNetworkWsUrl(wsUrl);
         checks.push([
           `WebSocket security ${entry.channel}/${entry.agentType}/${entry.account}`,
-          entry.accountConfig.allowInsecureWs === true || config.im?.allowInsecureWs === true,
-          'ws:// requires allowInsecureWs=true',
+          isPrivateHost
+            || entry.accountConfig.allowInsecureWs === true
+            || config.im?.allowInsecureWs === true,
+          isPrivateHost
+            ? 'ws:// on private network, allowed by default'
+            : 'ws:// on public host requires allowInsecureWs=true',
         ]);
       }
     }

@@ -39,11 +39,12 @@ withTempHome((tempDir) => {
   assert.strictEqual(result.status, 0, result.stderr);
 
   const config = readConfig(tempDir);
-  assert.strictEqual(config.defaultChannel, 'linco');
+  // init 不传 --channel 时默认走自托管预设 linco-bridge（与服务器生成命令对齐）
+  assert.strictEqual(config.defaultChannel, 'linco-bridge');
   assert.strictEqual(config.defaultAgent, 'claude');
-  assert.deepStrictEqual(config.activeChannels, ['linco']);
-  assert.strictEqual(config.channels.linco.agents.claude.defaultAccount, 'default');
-  assert.deepStrictEqual(config.channels.linco.agents.claude.accounts.default, {
+  assert.deepStrictEqual(config.activeChannels, ['linco-bridge']);
+  assert.strictEqual(config.channels['linco-bridge'].agents.claude.defaultAccount, 'default');
+  assert.deepStrictEqual(config.channels['linco-bridge'].agents.claude.accounts.default, {
     appId: 'app',
     appSecret: 'secret',
     enabled: true,

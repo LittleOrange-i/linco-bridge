@@ -492,7 +492,7 @@ export class ChatService {
     return {
       apiBaseUrl: resolvePublicHttpOrigin(),
       wsBaseUrl: this.bridgeService.getWsUrl(),
-      connectChannel: 'linco-demo',
+      connectChannel: 'linco-bridge',
     }
   }
 

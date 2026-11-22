@@ -31,13 +31,15 @@ export function toBridgeSetupDto(
     appSecret: string
     accountId: string
     boundContextId?: string | null
+    /** “新增连接”场景：命令里附带 --account，避免覆盖连接器已有账号槽位 */
+    accountIdInCommand?: boolean
   },
   wsUrl: string,
 ): BridgeSetupDto {
   const params: BridgeCommandParams = {
     appId: input.appId,
     appSecret: input.appSecret,
-    accountId: input.accountId,
+    ...(input.accountIdInCommand ? { accountId: input.accountId } : {}),
     ...(shouldEmbedWsUrlInSetupCommands() ? { wsUrl } : {}),
   }
   const initCommand = buildInitCommand(input.bridgeType, params)

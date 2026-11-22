@@ -48,15 +48,19 @@ export function useBridgeConnection(type: Ref<AgentBridgeType>) {
   const needsContextBinding = computed(() => requiresContextBinding(type.value))
   const connectionId = computed(() => setup.value?.connectionId ?? '')
   const commandText = computed(() => {
-    if (setup.value?.appId && setup.value.appSecret && setup.value.accountId) {
+    // 优先用服务器生成的命令文本：首接不带 --account，公网部署才嵌 --ws-url，
+    // 场景语义（首接/新增连接）由服务器控制，App 端不重复拼装
+    const serverCommands = setup.value?.setupCommands?.trim()
+    if (serverCommands) return serverCommands
+    // 兜底：旧版服务器未返回 setupCommands 时本地生成
+    if (setup.value?.appId && setup.value.appSecret) {
       return buildSetupCommands(type.value, {
         appId: setup.value.appId,
         appSecret: setup.value.appSecret,
-        accountId: setup.value.accountId,
         wsUrl: setup.value.wsUrl,
       })
     }
-    return setup.value?.setupCommands?.trim() ?? ''
+    return ''
   })
 
   async function loadSetup() {

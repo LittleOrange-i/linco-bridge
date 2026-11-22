@@ -24,7 +24,9 @@ function initCommand(options, context = {}) {
 
   const account = options.account || 'default';
   const agentType = options.agent ? options.agent.trim().toLowerCase() : null;
-  const channel = options.channel ? String(options.channel).trim() : 'linco';
+  // 默认走自托管预设（linco-bridge，默认 ws://127.0.0.1:3300），与服务器生成命令对齐；
+  // 官方云端用户显式传 --channel linco
+  const channel = options.channel ? String(options.channel).trim() : 'linco-bridge';
   const wsUrl = options['ws-url'] ? String(options['ws-url']).trim() : '';
   if (!channel) throw new Error('参数 --channel 不能为空');
   const configFile = getConfigFile();

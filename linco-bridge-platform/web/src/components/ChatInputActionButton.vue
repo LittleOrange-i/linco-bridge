@@ -5,6 +5,11 @@ import {
   CHAT_INPUT_ICON_SIZE_RPX,
   CHAT_INPUT_SEND_SIZE_RPX,
 } from '@/constants/chat-icons'
+import { uniCompat } from '@/utils/uni-compat'
+
+// inline style 里的 rpx 不会被 PostCSS 编译（浏览器不识别），需运行时换算成 px，
+// 否则按钮容器尺寸声明失效、被图标内容撑爆
+const rpxToPx = (value: number) => `${Math.round(uniCompat.upx2px(value))}px`
 
 const props = withDefaults(
   defineProps<{
@@ -23,6 +28,16 @@ const props = withDefaults(
     voiceIconSizeRpx: CHAT_INPUT_ICON_SIZE_RPX,
   },
 )
+
+const actionButtonSize = computed(() => ({
+  width: rpxToPx(CHAT_INPUT_SEND_SIZE_RPX),
+  height: rpxToPx(CHAT_INPUT_SEND_SIZE_RPX),
+}))
+
+const voiceIconSize = computed(() => ({
+  width: rpxToPx(props.voiceIconSizeRpx),
+  height: rpxToPx(props.voiceIconSizeRpx),
+}))
 
 const emit = defineEmits<{
   send: []
@@ -57,10 +72,7 @@ function handleTap() {
       'chat-action-btn--stop': isSending,
       'chat-action-btn--asset': !isSending,
     }"
-    :style="{
-      width: `${CHAT_INPUT_SEND_SIZE_RPX}rpx`,
-      height: `${CHAT_INPUT_SEND_SIZE_RPX}rpx`,
-    }"
+    :style="actionButtonSize"
     @click="handleTap"
   >
     <span v-if="isSending" class="chat-action-btn__stop">■</span>
@@ -70,15 +82,7 @@ function handleTap() {
       class="chat-action-btn__send"
       :src="CHAT_ICON.sendDisabled"
     />
-    <img
-      v-else
-      class="chat-action-btn__voice"
-      :style="{
-        width: `${voiceIconSizeRpx}rpx`,
-        height: `${voiceIconSizeRpx}rpx`,
-      }"
-      :src="CHAT_ICON.voice"
-    />
+    <img v-else class="chat-action-btn__voice" :style="voiceIconSize" :src="CHAT_ICON.voice" />
   </div>
 </template>
 

@@ -21,6 +21,13 @@
       }
     },
     {
+      "path": "pages/zcode/index",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f5f5f5"
+      }
+    },
+    {
       "path": "pages/bridge/import-local",
       "style": {
         "navigationBarTitleText": "连接 Agent",

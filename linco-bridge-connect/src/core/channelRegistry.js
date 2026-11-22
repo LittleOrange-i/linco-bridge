@@ -4,6 +4,8 @@ const lincoDemoAdapter = require('../channel/lincoDemo');
 const CHANNEL_ADAPTERS = {
   [lincoAdapter.name]: lincoAdapter,
   [lincoDemoAdapter.name]: lincoDemoAdapter,
+  // 自托管预设新名别名：与 CHANNEL_PRESETS['linco-bridge'] 对齐
+  'linco-bridge': lincoDemoAdapter,
 };
 
 const CHANNEL_PRESETS = {
@@ -12,6 +14,13 @@ const CHANNEL_PRESETS = {
     defaultWsUrl: lincoAdapter.defaults.DEFAULT_LINCO_WS_URL,
     agentWsUrls: lincoAdapter.defaults.OFFICIAL_LINCO_AGENT_WS_URLS,
   },
+  // 自托管预设新名（服务器端生成命令不再携带 --channel，init 默认即此预设）
+  'linco-bridge': {
+    name: 'linco-bridge',
+    defaultWsUrl: lincoDemoAdapter.defaults.DEFAULT_LINCO_DEMO_WS_URL,
+    agentWsUrls: lincoDemoAdapter.defaults.OFFICIAL_LINCO_DEMO_AGENT_WS_URLS,
+  },
+  // 旧名兼容：存量 config.json 里的 linco-demo 继续生效，行为与新名完全一致
   'linco-demo': {
     name: 'linco-demo',
     defaultWsUrl: lincoDemoAdapter.defaults.DEFAULT_LINCO_DEMO_WS_URL,

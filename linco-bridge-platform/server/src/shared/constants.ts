@@ -35,7 +35,7 @@ export function generateConnectionAccountId(type: AgentBridgeType): string {
 /** Unique app_id for an additional bridge connection row. */
 export function generateConnectionAppId(type: AgentBridgeType): string {
   const suffix = randomUUID().replace(/-/g, '').slice(0, 8)
-  return `demo-${type}-${suffix}-app`
+  return `linco-${type}-${suffix}`
 }
 
 export function agentDisplayName(type: AgentBridgeType): string {

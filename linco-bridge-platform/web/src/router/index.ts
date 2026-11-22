@@ -5,6 +5,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/pages/messages/index', component: () => import('@/pages/messages/index.vue') },
   { path: '/pages/agents/index', component: () => import('@/pages/agents/index.vue') },
   { path: '/pages/bridge/index', component: () => import('@/pages/bridge/index.vue') },
+  { path: '/pages/zcode/index', component: () => import('@/pages/zcode/index.vue') },
   {
     path: '/pages/bridge/import-local',
     component: () => import('@/pages/bridge/import-local.vue'),

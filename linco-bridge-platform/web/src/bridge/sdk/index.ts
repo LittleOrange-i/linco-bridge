@@ -237,7 +237,7 @@ export function createMockBridgeSdk(options?: {
     const existing = store.get(type)
     if (existing) return existing
 
-    const appId = `demo-${type}-app`
+    const appId = `linco-${type}`
     const appSecret = `demo-${type}-secret`
     const accountId = defaultAccountId(type)
     const setup: AgentBridgeSetup = {

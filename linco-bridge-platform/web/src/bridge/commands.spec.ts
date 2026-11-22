@@ -17,40 +17,29 @@ describe('bridge/commands', () => {
     appId: 'app-123',
 
     appSecret: 'secret-456',
-
-    accountId: 'codex_1',
   }
 
-  const expectedInit = (agent: string, accountId: string) =>
-    [
-      `linco-connect init --token "app-123:secret-456"`,
+  it('buildInitCommand keeps first-time setup minimal (no channel/account/ws flags)', () => {
+    expect(buildInitCommand('codex', params)).toBe(
+      [
+        `linco-connect init --token "app-123:secret-456"`,
 
-      `--agent ${agent}`,
-
-      `--channel ${BRIDGE_CONNECT_CHANNEL}`,
-
-      `--account ${accountId}`,
-
-      '--allow-insecure-ws',
-    ].join(' ')
-
-  it('buildInitCommand uses linco-demo channel without ws-url override', () => {
-    expect(buildInitCommand('codex', params)).toBe(expectedInit('codex', 'codex_1'))
-
-    expect(buildInitCommand('codex', params)).not.toContain('--ws-url')
+        `--agent codex`,
+      ].join(' '),
+    )
   })
 
   it('buildInitCommand matches openclaw agent flag', () => {
-    expect(
-      buildInitCommand('openclaw', {
-        ...params,
+    expect(buildInitCommand('openclaw', params)).toBe(
+      [
+        `linco-connect init --token "app-123:secret-456"`,
 
-        accountId: 'openclaw_1',
-      }),
-    ).toBe(expectedInit('openclaw', 'openclaw_1'))
+        `--agent openclaw`,
+      ].join(' '),
+    )
   })
 
-  it('buildInitCommand supports optional ws-url override', () => {
+  it('buildInitCommand embeds ws-url override without insecure flag for private hosts', () => {
     const customWs = `${DEFAULT_BRIDGE_WS_URL}/codex`
     expect(
       buildInitCommand('codex', {
@@ -61,9 +50,38 @@ describe('bridge/commands', () => {
       [
         `linco-connect init --token "app-123:secret-456"`,
         `--agent codex`,
-        `--channel ${BRIDGE_CONNECT_CHANNEL}`,
-        `--account codex_1`,
         `--ws-url ${customWs}`,
+      ].join(' '),
+    )
+  })
+
+  it('buildInitCommand adds account slot only when explicitly provided', () => {
+    expect(
+      buildInitCommand('codex', {
+        ...params,
+        accountId: 'codex_1',
+      }),
+    ).toBe(
+      [
+        `linco-connect init --token "app-123:secret-456"`,
+        `--agent codex`,
+        `--account codex_1`,
+      ].join(' '),
+    )
+  })
+
+  it('buildInitCommand requires explicit insecure opt-in for public ws:// hosts', () => {
+    const publicWs = 'ws://bridge.example.com/bridge/ws/codex'
+    expect(
+      buildInitCommand('codex', {
+        ...params,
+        wsUrl: publicWs,
+      }),
+    ).toBe(
+      [
+        `linco-connect init --token "app-123:secret-456"`,
+        `--agent codex`,
+        `--ws-url ${publicWs}`,
         '--allow-insecure-ws',
       ].join(' '),
     )
@@ -84,13 +102,23 @@ describe('bridge/commands', () => {
 
         '',
 
-        expectedInit('claude', 'claude_1').replace('app-123:secret-456', 'a:b'),
+        [
+          `linco-connect init --token "a:b"`,
+
+          `--agent claude`,
+
+          `--account claude_1`,
+        ].join(' '),
 
         '',
 
         'linco-connect start --daemon',
       ].join('\n'),
     )
+  })
+
+  it('BRIDGE_CONNECT_CHANNEL matches connector linco-bridge preset', () => {
+    expect(BRIDGE_CONNECT_CHANNEL).toBe('linco-bridge')
   })
 
   it('defaultAccountId follows Flutter naming', () => {

@@ -3,6 +3,25 @@ const { sendSlashCommandResult } = require('./common');
 
 const USAGE = 'Usage: /accounts --channel <channel>';
 
+// 自托管预设的改名兼容：linco-bridge（新名）与 linco-demo（旧名）是同一预设，
+// 服务器端已切换为新名，存量 config.json 里仍是旧名，两者需互相匹配
+const CHANNEL_COMPAT_GROUPS = [
+  ['linco-bridge', 'linco-demo'],
+];
+
+function resolveChannelAlias(channel, config = {}) {
+  const requested = String(channel || '').trim();
+  if (config?.channels?.[requested]) return requested;
+  for (const group of CHANNEL_COMPAT_GROUPS) {
+    if (group.includes(requested)) {
+      for (const alias of group) {
+        if (config?.channels?.[alias]) return alias;
+      }
+    }
+  }
+  return requested;
+}
+
 function handleAccounts(rawArg, ws, session, config = {}) {
   const parsed = parseAccountsArgs(rawArg);
   if (!parsed.ok) {
@@ -10,7 +29,8 @@ function handleAccounts(rawArg, ws, session, config = {}) {
     return;
   }
 
-  const channelConfig = config?.channels?.[parsed.channel];
+  const channel = resolveChannelAlias(parsed.channel, config);
+  const channelConfig = config?.channels?.[channel];
   if (!channelConfig) {
     sendSlashCommandResult(ws, 'accounts', {
       channel: parsed.channel,
@@ -21,7 +41,7 @@ function handleAccounts(rawArg, ws, session, config = {}) {
   }
 
   sendSlashCommandResult(ws, 'accounts', {
-    channel: parsed.channel,
+    channel,
     accountIds: listChannelAccountIds(channelConfig),
   }, session);
 }

@@ -180,12 +180,30 @@ const { onCompositionStart, onCompositionEnd, onKeydown } = useChatTextareaSubmi
   box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.06);
 }
 
+/* 输入框：去掉浏览器默认边框/手柄，改为圆角浅灰卡片 + 聚焦高亮 */
 .landing-input__field {
+  box-sizing: border-box;
   width: 100%;
   min-height: 120rpx;
+  padding: 20rpx 24rpx;
+  background: #f5f6f7;
+  border: 2rpx solid transparent;
+  border-radius: 20rpx;
   font-size: 30rpx;
   line-height: 1.45;
   color: #1a1a1a;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.landing-input__field::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.landing-input__field:focus {
+  background: #ffffff;
+  border-color: rgba(0, 117, 74, 0.55);
 }
 
 .landing-input__placeholder {

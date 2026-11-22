@@ -179,6 +179,8 @@ export class BridgeService {
         appSecret: created.app_secret,
         accountId: created.account_id,
         boundContextId: created.bound_context_id,
+        // 新增连接：附带 --account，让多账号在同一台电脑并存
+        accountIdInCommand: true,
       },
       this.getWsUrl(created.bridge_type),
     )
